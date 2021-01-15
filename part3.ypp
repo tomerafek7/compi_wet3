@@ -1,0 +1,215 @@
+%{
+    #include "part2.h" 
+    #include <stdio.h>
+    using namespace std;
+    
+    extern char *yytext;
+    extern int yylex();
+    extern int yylineno;
+    void yyerror(char const * message);
+	
+    ParserNode* parseTree = NULL;
+    
+%}
+
+%token id str integernum realnum 
+%token tk_int tk_float tk_void tk_write tk_read tk_while tk_do tk_return tk_activate tk_scope tk_scopes
+%nonassoc tk_if tk_then
+%nonassoc tk_else
+%left tk_comma
+%right tk_assign
+%left tk_or
+%left tk_and
+%left relop
+%left addop
+%left mulop
+%right tk_not 
+%left tk_dot
+%left tk_rp '{'
+%right tk_lp '}'
+
+%%
+
+
+PROGRAM:    FDEFS   {parseTree = makeNode("PROGRAM",NULL, $1);}  ;
+
+FDEFS:      FDEFS FUNC_API BLK  {$$ = makeNode("FDEFS",NULL, $1);
+                                 concatList($1, $2);
+                                 concatList($1, $3);}   |
+            FDEFS FUNC_API ';'  {$$ = makeNode("FDEFS",NULL, $1);
+                                 concatList($1, $2);
+                                 concatList($1, $3);}   |
+                                {$$ = makeNode("FDEFS",NULL,makeNode("EPSILON",NULL, NULL));};
+            
+FUNC_API:   TYPE id tk_lp FUNC_ARGS tk_rp SCOPES_API    {$$ = makeNode("FUNC_API",NULL, $1);
+                                                                concatList($1, $2);
+                                                                concatList($1, $3);
+                                                                concatList($1, $4);
+                                                                concatList($1, $5);
+                                                                concatList($1, $6); }; 
+
+SCOPES_API: tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    {$$ = makeNode("SCOPES_API",NULL, $1);
+                                                            concatList($1, $2);
+                                                            concatList($1, $3);
+                                                            concatList($1, $4);
+                                                            concatList($1, $5);}    | 
+                                                            {$$ = makeNode("SCOPES_API",NULL,makeNode("EPSILON",NULL, NULL));};
+            
+FUNC_ARGS:  FUNC_ARGLIST    {$$ = makeNode("FUNC_ARGS",NULL, $1);}|
+                            {$$ = makeNode("FUNC_ARGS",NULL,makeNode("EPSILON",NULL, NULL));};
+
+FUNC_ARGLIST: FUNC_ARGLIST tk_comma DCL  {$$ = makeNode("FUNC_ARGLIST",NULL, $1);
+                                    concatList($1, $2);
+                                    concatList($1, $3);}    |
+              DCL                   {$$ = makeNode("FUNC_ARGLIST",NULL, $1);};
+              
+BLK: '{' STLIST '}'                 {$$ = makeNode("BLK",NULL, $1);
+                                    concatList($1, $2);
+                                    concatList($1, $3);}    ;
+
+DCL:    id ':' TYPE                 {$$ = makeNode("DCL",NULL, $1);
+                                    concatList($1, $2);
+                                    concatList($1, $3);}    |
+        id tk_comma DCL                  {$$ = makeNode("DCL",NULL, $1);
+                                    concatList($1, $2);
+                                    concatList($1, $3);}    ; 
+                                    
+TYPE:   tk_int     {$$ = makeNode("TYPE",NULL, $1);}    |
+        tk_float   {$$ = makeNode("TYPE",NULL, $1);}    |
+        tk_void    {$$ = makeNode("TYPE",NULL, $1);}    ;
+        
+STLIST: STLIST STMT {$$ = makeNode("STLIST",NULL, $1);
+                    concatList($1, $2);}    |
+                    {$$ = makeNode("STLIST",NULL,makeNode("EPSILON",NULL, NULL));};
+        
+STMT:   DCL ';'     {$$ = makeNode("STMT",NULL, $1);
+                    concatList($1, $2);}                |
+        ASSN        {$$ = makeNode("STMT",NULL, $1);}   |
+        EXP ';'     {$$ = makeNode("STMT",NULL, $1);
+                    concatList($1, $2);}                |
+        CNTRL       {$$ = makeNode("STMT",NULL, $1);}   |
+        READ        {$$ = makeNode("STMT",NULL, $1);}   |
+        WRITE       {$$ = makeNode("STMT",NULL, $1);}   |
+        RETURN      {$$ = makeNode("STMT",NULL, $1);}   |
+        BLK         {$$ = makeNode("STMT",NULL, $1);}   |
+        tk_scope tk_lp integernum tk_rp BLK    {$$ = makeNode("STMT",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);
+                                                    concatList($1, $4);
+                                                    concatList($1, $5);};
+        
+RETURN: tk_return EXP ';'   {$$ = makeNode("RETURN",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);}    |
+        tk_return ';'       {$$ = makeNode("RETURN",NULL, $1);
+                                  concatList($1, $2);}    ;
+        
+WRITE:  tk_write tk_lp EXP tk_rp ';'    {$$ = makeNode("WRITE",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);
+                                                    concatList($1, $4);
+                                                    concatList($1, $5);}    |
+
+        tk_write tk_lp str tk_rp ';'    {$$ = makeNode("WRITE",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);
+                                                    concatList($1, $4);
+                                                    concatList($1, $5);}    ;
+        
+READ:   tk_read tk_lp LVAL tk_rp ';'    {$$ = makeNode("READ",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);
+                                                    concatList($1, $4);
+                                                    concatList($1, $5);}    ;
+        
+ASSN:   LVAL tk_assign EXP ';'      {$$ = makeNode("ASSN",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);
+                                                    concatList($1, $4);}    ;
+        
+LVAL: id    {$$ = makeNode("LVAL",NULL, $1);}   ;
+
+CNTRL:  tk_if BEXP tk_then STMT tk_else STMT    {$$ = makeNode("CNTRL",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);
+                                                    concatList($1, $4);
+                                                    concatList($1, $5);
+                                                    concatList($1, $6); }   |
+        tk_if BEXP tk_then STMT                 {$$ = makeNode("CNTRL",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);
+                                                    concatList($1, $4);}    |
+                                                                                                        
+        tk_while BEXP tk_do STMT                {$$ = makeNode("CNTRL",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);
+                                                    concatList($1, $4);}    ;
+BEXP:   BEXP tk_or BEXP     {$$ = makeNode("BEXP",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);}  |
+        BEXP tk_and BEXP    {$$ = makeNode("BEXP",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);}  | 
+        tk_not BEXP         {$$ = makeNode("BEXP",NULL, $1);
+                                  concatList($1, $2);}  |
+        EXP relop EXP       {$$ = makeNode("BEXP",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);}  |
+        tk_lp BEXP tk_rp        {$$ = makeNode("BEXP",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);}  ;
+        
+EXP:    EXP addop EXP       {$$ = makeNode("EXP",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);}  | 
+        EXP mulop EXP       {$$ = makeNode("EXP",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);}  |
+        tk_lp EXP tk_rp         {$$ = makeNode("EXP",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);}  |
+        tk_lp TYPE tk_rp EXP    {$$ = makeNode("EXP",NULL, $1);
+                                  concatList($1, $2);
+                                  concatList($1, $3);
+                                  concatList($1, $4); }  |
+        id              {$$ = makeNode("EXP",NULL, $1);}    |
+        NUM             {$$ = makeNode("EXP",NULL, $1);}    | 
+        CALL            {$$ = makeNode("EXP",NULL, $1);}    ;
+        
+NUM:    integernum {$$ = makeNode("NUM",NULL, $1);}  |
+        realnum    {$$ = makeNode("NUM",NULL, $1);}  ;
+        
+CALL: id tk_lp CALL_ARGS tk_rp ACTIVATE_SCOPES  {$$ = makeNode("CALL",NULL, $1);
+                                                concatList($1, $2);
+                                                concatList($1, $3);
+                                                concatList($1, $4);
+                                                concatList($1, $5);}    ;
+
+ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp      {$$ = makeNode("ACTIVATE_SCOPES",NULL, $1);
+                                                                    concatList($1, $2);
+                                                                    concatList($1, $3);
+                                                                    concatList($1, $4);
+                                                                    concatList($1, $5);}    |
+                                                                    {$$ = makeNode("ACTIVATE_SCOPES",NULL,makeNode("EPSILON",NULL, NULL));};
+
+SCOPES_LIST:    SCOPES_LIST tk_comma integernum      {$$ = makeNode("SCOPES_LIST",NULL, $1);
+                                                    concatList($1, $2);
+                                                    concatList($1, $3);}    |
+                integernum                          {$$ = makeNode("SCOPES_LIST",NULL, $1);}    ;
+
+CALL_ARGS:  CALL_ARGLIST    {$$ = makeNode("CALL_ARGS",NULL, $1);}    |
+                            {$$ = makeNode("CALL_ARGS",NULL,makeNode("EPSILON",NULL, NULL));};
+            
+CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP    {$$ = makeNode("CALL_ARGLIST",NULL, $1);
+                                                concatList($1, $2);
+                                                concatList($1, $3);}    |
+                EXP                           {$$ = makeNode("CALL_ARGLIST",NULL, $1);}    ;
+
+%%
+
+
+void yyerror(char const * message)
+{
+    printf("Syntax error: '%s' in line number %d\n",yytext,yylineno);
+    exit(2);
+}
