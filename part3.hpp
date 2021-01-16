@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <stack>
+#include <iostream>
 
 using namespace std;
 
@@ -96,7 +97,7 @@ public:
 
     void add_scopes(string &name, vector<int> & scopes);
 
-    void add_call(string &name, int call_line, vector<Type> & api);
+    void add_call(string &name, int call_line, vector<Type> & api, vector<int> & scopes);
 
 };
 
@@ -130,11 +131,13 @@ extern Commands *commands;
 extern stack<SymbolTable>* symbol_table_stack;
 
 extern int RegisterIdx[2];
+
 extern SymbolTable* current_sym_tbl;
 
 extern FunctionTable* function_table;
 
 vector<int>* scopes_api;
+
 int offset = -4;
 
 void SemanticError(int line_num, const char* error){

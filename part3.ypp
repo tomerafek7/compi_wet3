@@ -59,18 +59,20 @@ FUNC_ARGS tk_rp
                                                                 scopes_api = new vector<int>();
                                                                 }
 
-SCOPES_API    	                                                ;
+SCOPES_API    	                                                {
+                                                                function_table.add_scopes($2.value,scopes_api);
+                                                                };
 
-SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{}    |
-                                                            	{$$ = makeNode("SCOPES_API",NULL,makeNode("EPSILON",NULL, NULL));};
+SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{}      |
+                                                            	{};
             
-FUNC_ARGS:  	FUNC_ARGLIST    				                {$$ = makeNode("FUNC_ARGS",NULL, $1);}|
-                                                                {$$ = makeNode("FUNC_ARGS",NULL,makeNode("EPSILON",NULL, NULL));};
+FUNC_ARGS:  	FUNC_ARGLIST    				                {}      |
+                                                                {};
 
-FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL  			            {}    |
-              	DCL                   				            {$$ = makeNode("FUNC_ARGLIST",NULL, $1);};
+FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL  			            {}      |
+              	DCL                   				            {};
               
-BLK: 	'{' STLIST '}'                 				            {$$ = makeNode("BLK",NULL, $1);
+BLK: 	'{' STLIST '}'                 				            { $$ = makeNode("BLK",NULL, $1);
                                                                 concatList($1, $2);
                                     				            concatList($1, $3);}    ;
 
@@ -348,11 +350,8 @@ NUM:    integernum
 		}  ;
         
 CALL: id tk_lp CALL_ARGS tk_rp ACTIVATE_SCOPES  		        {
-                                                                $$ = makeNode("CALL",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);
-                                                                concatList($1, $4);
-                                                                concatList($1, $5); }    ;
+                                                                if(function_table.add_scopes($2.value,scopes_api);.)//FIXME continue call implemention
+                                                                }    ;
 
 ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp  { $$ = makeNode("ACTIVATE_SCOPES",NULL, $1);
                                                                 concatList($1, $2);
