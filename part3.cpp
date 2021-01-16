@@ -6,7 +6,7 @@ Commands::Commands(){}
 
 void Commands::backpatch(vector<int> list, int address){
     for (vector<int>::iterator it = list.begin() ; it != list.end(); ++it){
-        command_list[it] += to_string(address)
+        command_list[it] += to_string(address);
     }
 }
 
@@ -33,6 +33,14 @@ vector<int>& Commands::makelist(int value){
 }
     
 
+Function::Function(int dec, type return_type, vector<type> api) {
+    dec = dec;
+    return_type = return_type;
+    api = api;
+
+
+
+}
 
 
 

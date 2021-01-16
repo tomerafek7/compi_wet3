@@ -21,6 +21,12 @@ vector<int> nextlist;
 
 } Line;
 
+typedef enum
+{
+    INT,
+    FLOAT,
+    VOID
+} type;
 
 class Commands{
 private:
@@ -41,14 +47,15 @@ public:
 };
 
 Commands *commands = new Commands();
+
 class Function{
 
-    Function();
+    Function(int dec, type return_type, vector<type> api);
 
     int dec;
     vector<int> calls;
-
-
+    type return_type;
+    vector<type> api;
 
 };
 
