@@ -10,6 +10,7 @@ using std::vector;
 
 
 typedef struct line {
+int quad; // command number
 String type; // Syntax variable or token type for tokens
 String value; // Token value. NULL for syntax variables
 vector<String> code;
