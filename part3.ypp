@@ -31,17 +31,18 @@
 %%
 
 
-PROGRAM:    FDEFS   						{parseTree = makeNode("PROGRAM",NULL, $1);}  ;
+PROGRAM:    FDEFS   						                    {parseTree = makeNode("PROGRAM",NULL, $1);}  ;
 
-FDEFS:      FDEFS FUNC_API BLK  				{$$ = makeNode("FDEFS",NULL, $1);
-                                				concatList($1, $2);
-                                				concatList($1, $3);}   |
-            FDEFS FUNC_API ';'  				{$$ = makeNode("FDEFS",NULL, $1);
-                                				concatList($1, $2);
-                                				concatList($1, $3);}   |
-                                				{$$ = makeNode("FDEFS",NULL,makeNode("EPSILON",NULL, NULL));};
+FDEFS:      FDEFS FUNC_API BLK  				                {$$ = makeNode("FDEFS",NULL, $1);
+                                                                concatList($1, $2);
+                                                                concatList($1, $3);}   |
+
+            FDEFS FUNC_API ';'  				                {$$ = makeNode("FDEFS",NULL, $1);
+                                                                concatList($1, $2);
+                                                                concatList($1, $3);}   |
+                                                                {$$ = makeNode("FDEFS",NULL,makeNode("EPSILON",NULL, NULL));};
             
-FUNC_API:   TYPE id tk_lp FUNC_ARGS tk_rp SCOPES_API    	{$$ = makeNode("FUNC_API",NULL, $1);
+FUNC_API:   TYPE id tk_lp FUNC_ARGS tk_rp SCOPES_API    	    {$$ = makeNode("FUNC_API",NULL, $1);
                                                                 concatList($1, $2);
                                                                 concatList($1, $3);
                                                                 concatList($1, $4);
@@ -55,24 +56,24 @@ SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{$$ = makeNode("SCOPES
                                                             	concatList($1, $5);}    | 
                                                             	{$$ = makeNode("SCOPES_API",NULL,makeNode("EPSILON",NULL, NULL));};
             
-FUNC_ARGS:  	FUNC_ARGLIST    				{$$ = makeNode("FUNC_ARGS",NULL, $1);}|
-                            					{$$ = makeNode("FUNC_ARGS",NULL,makeNode("EPSILON",NULL, NULL));};
+FUNC_ARGS:  	FUNC_ARGLIST    				                {$$ = makeNode("FUNC_ARGS",NULL, $1);}|
+                                                                {$$ = makeNode("FUNC_ARGS",NULL,makeNode("EPSILON",NULL, NULL));};
 
-FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL  			{$$ = makeNode("FUNC_ARGLIST",NULL, $1);
-                                    				concatList($1, $2);
-                                    				concatList($1, $3);}    |
-              	DCL                   				{$$ = makeNode("FUNC_ARGLIST",NULL, $1);};
+FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL  			            {$$ = makeNode("FUNC_ARGLIST",NULL, $1);
+                                                                concatList($1, $2);
+                                                                concatList($1, $3);}    |
+              	DCL                   				            {$$ = makeNode("FUNC_ARGLIST",NULL, $1);};
               
-BLK: 	'{' STLIST '}'                 				{$$ = makeNode("BLK",NULL, $1);
-                                    				concatList($1, $2);
-                                    				concatList($1, $3);}    ;
+BLK: 	'{' STLIST '}'                 				            {$$ = makeNode("BLK",NULL, $1);
+                                                                concatList($1, $2);
+                                    				            concatList($1, $3);}    ;
 
 DCL:    id ':' TYPE                 				            {$$ =
 
                                                                 }    |
-        id tk_comma DCL             				{$$ = makeNode("DCL",NULL, $1);
-                                    				concatList($1, $2);
-                                    				concatList($1, $3);}    ; 
+        id tk_comma DCL             				            {$$ = makeNode("DCL",NULL, $1);
+                                    				            concatList($1, $2);
+                                    				            concatList($1, $3);}    ;
                                     
 TYPE:   tk_int     						                        { $$ = makeNode("TYPE",NULL, $1); }    |
         tk_float   						                        { $$ = makeNode("TYPE",NULL, $1); }    |
@@ -211,7 +212,7 @@ NUM:    integernum 						                        { $$ = makeNode("NUM",NULL, $1)
 
         realnum    						                        { $$ = makeNode("NUM",NULL, $1); }  ;
         
-        CALL: id tk_lp CALL_ARGS tk_rp ACTIVATE_SCOPES  		{
+CALL: id tk_lp CALL_ARGS tk_rp ACTIVATE_SCOPES  		        {
                                                                 $$ = makeNode("CALL",NULL, $1);
                                                                 concatList($1, $2);
                                                                 concatList($1, $3);

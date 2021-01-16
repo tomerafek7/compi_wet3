@@ -121,6 +121,9 @@ extern Commands *commands;
 
 extern stack<SymbolTable>* symbol_table_stack;
 
+extern SymbolTable* currnet_sym_tbl;
+
+extern FunctionTable* function_table;
 
 
 
