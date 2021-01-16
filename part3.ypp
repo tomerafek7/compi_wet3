@@ -281,7 +281,7 @@ EXP:    EXP addop EXP
 			$$.type = $2.type;
 			$$.regnum = $2.regnum;
 			
-		}  |
+        }  |
 
         tk_lp TYPE tk_rp EXP    				                
 		{
@@ -293,17 +293,59 @@ EXP:    EXP addop EXP
 
         id              					                    
 		{ 
+			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
+			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
+			$$.regnum = RegisterIdx[$$.type]++;
+			int addr_reg_i = RegisterIdx[INT]++;
+			if (offset > 0){
+				emit("ADD2I I" + to_string(addr_reg) + " I1 " + to_string(offset));
+			} else{ // offset <= 0 
+				emit("SUBTI I" + to_string(addr_reg) + " I1 " + to_string(-offset));
+			}
+			if ($$.type == FLOAT){ // float - casting is needed
+				int addr_reg_f = RegisterIdx[FLOAT]++;
+				emit("CITOF F" + to_string(addr_reg_f) + " I" + to_string(addr_reg_i));
+				emit("LOADF F" + to_string($$.regnum) + " F" + to_string(addr_reg_f) + " 0");
+			} else{ // integer - no casting is needed
+				emit("LOADI I" + to_string($$.regnum) + " I" + to_string(addr_reg_i) + " 0");
+			}
 			
-		}  |
+		}	|
 
-        NUM             					                    { $$ = makeNode("EXP",NULL, $1); }    |
+        NUM             					                    
+		{ 
+			$$.type = $1.type;
+			$$.value = $1.value;
+			$$.regnum = RegisterIdx[$$.type]++;
+			string op_type = ($$.type == INT) ? "I" : "F";
+			emit("COPY" + op_type + " " + op_type + to_string($$.regnum) + " " + to_string($$.value));
+		}    |
 
-        CALL            					                    { $$ = makeNode("EXP",NULL, $1); }    ;
+        CALL
+		{
+			$$.type = $1.type;
+			$$.regnum = RegisterIdx[$$.type]++;
+			if ($$.type == FLOAT){ // float - casting is needed
+				int addr_reg_f = RegisterIdx[FLOAT]++;
+				emit("CITOF F" + to_string(addr_reg_f) + " I1"); // assuming the function output is at I1 + 0
+				emit("LOADF F" + to_string($$.regnum) + " F" + to_string(addr_reg_f) + " 0");
+			} else{ // integer - no casting is needed
+				emit("LOADI I" + to_string($$.regnum) + " I1 " + "0");
+			}
+		}    ;
 
         
-NUM:    integernum 						                        { $$ = makeNode("NUM",NULL, $1); }  |
+NUM:    integernum 						                        
+		{ 
+			$$.type = INT;
+			$$.value = $1.value;
+		}  |
 
-        realnum    						                        { $$ = makeNode("NUM",NULL, $1); }  ;
+        realnum    						                        
+		{ 
+			$$.type = FLOAT;
+			$$.value = $1.value;		
+		}  ;
         
 CALL: id tk_lp CALL_ARGS tk_rp ACTIVATE_SCOPES  		        {
                                                                 $$ = makeNode("CALL",NULL, $1);
