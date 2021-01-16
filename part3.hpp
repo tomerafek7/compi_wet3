@@ -3,6 +3,7 @@
 #define COMMON_H
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -118,7 +119,10 @@ public:
 
 
 
+void SemanticError(int line_num, const char* error){
+    cerr << "Semantic error: <error description> in line number <line_number>"
 
+}
 
 
 

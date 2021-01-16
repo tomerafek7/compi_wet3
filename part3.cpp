@@ -67,12 +67,14 @@ name(name), address(address), type(type){}
 void SymbolTable::add_symbol(int call_line, string &name, int address, Type type){
     std::pair<std::map<string,Function*>::iterator,bool> res;
     res = table->insert(std::pair<string, Function*>(name,new Function(dec_line, return_type, api)));
-    if (!res.second) { // there's already a function with this name
-        throw SemanticException(dec_line, "Redeclaration of Function");
+    if (!res.second) { // there's already a variable with this name
+         SemanticError(call_line, "Redeclaration of Variable");
     }
 
 }
-int SymbolTable::get_symbol_address(int call_line, string &name);
+int SymbolTable::get_symbol_address(int call_line, string &name){
+
+}
 Type SymbolTable::get_symbol_type(int call_line, string &name);
 
 
