@@ -11,11 +11,18 @@
 
 using namespace std;
 
+typedef enum
+{
+    INT,
+    FLOAT,
+    VOID
+} Type;
 
 typedef struct line {
 int quad; // command number
 string type; // Syntax variable or token type for tokens
 string value; // Token value. NULL for syntax variables
+int regnum;
 vector<string> code;
 vector<int> truelist;
 vector<int> falselist;
@@ -23,12 +30,6 @@ vector<int> nextlist;
 
 } Line;
 
-typedef enum
-{
-    INT,
-    FLOAT,
-    VOID
-} Type;
 
 class SemanticException: public exception{
 public:
@@ -121,6 +122,8 @@ public:
 extern Commands *commands;
 
 extern stack<SymbolTable>* symbol_table_stack;
+
+extern int RegisterIdx[2];
 
 void SemanticError(int line_num, const char* error){
     cerr << "Semantic error: <error description> in line number <line_number>"

@@ -155,52 +155,138 @@ CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
                                                             	$$.nextlist = $3.falselist ;
                                                             	commands->emit ( 'UJUMP ' + $2.quad); };
 
-BEXP:   BEXP tk_or BEXP     					                {
-                                                                $$ = makeNode("BEXP",NULL, $1);
-                                                                concatList($1, $2);
-                                                                  concatList($1, $3); }  |
-
-    	BEXP tk_and BEXP    					                {
-                                                                $$ = makeNode("BEXP",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3); }  |
+BEXP:   BEXP tk_or M BEXP     					                {
+																commands->backpatch($1.falselist, $3.quad);
+																$$.truelist = commands->merge($1.truelist, $4.truelist);
+																$$.falselist = $4.falselist ; 
+																}  |
+    	BEXP tk_and M BEXP    					                {
+																commands->backpatch($1.truelist, $3.quad);
+																$$.falselist = commands->merge($1.truelist, $4.truelist);
+																$$.truelist = $4.falselist ; 
+																}  |
 
     	tk_not BEXP         					                {
-                                                                $$ = makeNode("BEXP",NULL, $1);
-                                                                concatList($1, $2); }  |
+                                                                $$.truelist = $2.falselist ; 
+																$$.falselist = $2.truelist ; 
+                                                                }  |
 
     	EXP relop EXP       					                {
-                                                                $$ = makeNode("BEXP",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3); }  |
+                                                                $$.truelist = commands->makelist(commands->nextquad());
+																TODO: complete
+																}  |
 
     	tk_lp BEXP tk_rp        				                {
-                                                                $$ = makeNode("BEXP",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3); }  ;
+                                                                $$.truelist = $2.truelist ; 
+																$$.falselist = $2.falselist ;  
+																} ;
         
-EXP:    EXP addop EXP       					                {
-                                                                $$ = makeNode("EXP",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3); }  |
+EXP:    EXP addop EXP       					                
+		{
+			int reg1, reg2;
+			// both are integers:
+			if($1.type == INT && $3.type == INT){
+				$$.type = INT;
+				reg1 = $1.regnum;
+				reg2 = $3.regnum;
+				// no casting is needed
+			// both are floats:
+			} else if($1.type == FLOAT && $3.type == FLOAT){
+				$$.type = FLOAT;
+				reg1 = $1.regnum;
+				reg2 = $3.regnum;
+				// no casting is needed
+			} else{ // one is integer and the other is float
+				$$.type = FLOAT;
+				if($1.type == INT){ // first is integer
+					reg1 = RegisterIdx[FLOAT]++;
+					commands->emit("CITOF " + "I" + to_string($1.regnum) + "F" + to_string(reg1));
+					reg2 = $3.regnum;
+				} else{ // second is integer
+					reg2 = RegisterIdx[FLOAT]++;
+					commands->emit("CITOF " + "I" + to_string($3.regnum) + "F" + to_string(reg2));
+					reg1 = $1.regnum;
+				}
+			}
+			
+			// allocate register for parent
+			$$.regnum = RegisterIdx[$$.type];
+			// different operation kind based on type:
+			string op_type;
+			if($$.type == INT){
+				op_type = "I"
+			} else{
+				op_type = "F"
+			}
+			
+			if($2.value == "+"){ // addition
+				commands->emit("ADD2" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+			} else{ // subtraction
+				commands->emit("SUBT" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+			}
+				
+		}	|
+		
+        EXP mulop EXP       					                
+		{
+			int reg1, reg2;
+			// both are integers:
+			if($1.type == INT && $3.type == INT){
+				$$.type = INT;
+				reg1 = $1.regnum;
+				reg2 = $3.regnum;
+				// no casting is needed
+			// both are floats:
+			} else if($1.type == FLOAT && $3.type == FLOAT){
+				$$.type = FLOAT;
+				reg1 = $1.regnum;
+				reg2 = $3.regnum;
+				// no casting is needed
+			} else{ // one is integer and the other is float
+				$$.type = FLOAT;
+				if($1.type == INT){ // first is integer
+					reg1 = RegisterIdx[FLOAT]++;
+					commands->emit("CITOF " + "I" + to_string($1.regnum) + "F" + to_string(reg1));
+					reg2 = $3.regnum;
+				} else{ // second is integer
+					reg2 = RegisterIdx[FLOAT]++;
+					commands->emit("CITOF " + "I" + to_string($3.regnum) + "F" + to_string(reg2));
+					reg1 = $1.regnum;
+				}
+			}
+			
+			// allocate register for parent
+			$$.regnum = RegisterIdx[$$.type];
+			// different operation kind based on type:
+			string op_type = ($$.type == INT) ? "I" : "F";
+			
+			if($2.value == "*"){ // multiplication
+				commands->emit("MULT" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+			} else{ // division
+				commands->emit("DIVD" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+			}
+	
+		}  |
 
-        EXP mulop EXP       					                {
-                                                                $$ = makeNode("EXP",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3); }  |
+        tk_lp EXP tk_rp         				                
+		{
+			$$.type = $2.type;
+			$$.regnum = $2.regnum;
+			
+		}  |
 
-        tk_lp EXP tk_rp         				                {
-                                                                $$ = makeNode("EXP",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3); }  |
+        tk_lp TYPE tk_rp EXP    				                
+		{
+			$$.type = ($2.type == "int") ? INT : FLOAT;
+			$$.regnum = RegisterIdx[$$.type]++;
+			string op_type = ($$.type == INT) ? "I" : "F";
+			emit("COPY" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string($4.regnum));
+		}  |
 
-        tk_lp TYPE tk_rp EXP    				                {
-                                                                $$ = makeNode("EXP",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);
-                                                                concatList($1, $4); }  |
-
-        id              					                    { $$ = makeNode("EXP",NULL, $1); }    |
+        id              					                    
+		{ 
+			
+		}  |
 
         NUM             					                    { $$ = makeNode("EXP",NULL, $1); }    |
 
@@ -238,9 +324,9 @@ CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP    			        {$$ = makeNode("CALL_ARG
                                                                 concatList($1, $3);}    |
                 EXP                          			        {$$ = makeNode("CALL_ARGLIST",NULL, $1);}    ;
 
-N:              						                        { $$ = makelist ( nextquad ) ; emit ( ' goto_ ' ) };
+N:              						                        { $$.nextlist = commands->makelist(commands->nextquad()) ; emit("goto ") };
 
-M:              						                        { $$ = nextquad }
+M:              						                        { $$.quad = commands->nextquad }
 
 
 
