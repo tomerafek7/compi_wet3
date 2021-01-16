@@ -30,7 +30,6 @@ vector<int> nextlist;
 
 } Line;
 
-
 class SemanticException: public exception{
 public:
     int line_num;
@@ -69,11 +68,14 @@ class Function{
 
 public:
     Function(int dec_line, Type return_type, vector<Type> & api);
-
+    Function(int dec_line, Type return_type);
+    void insertApi(vector<Type> & api);
+    void insertScopes(vector<int> & scopes);
     int dec_line;
     vector<int>* calls;
     Type return_type;
     vector<Type>* api;
+    vector<int>* scopes;
 
     void add_call(int line);
 
@@ -88,7 +90,11 @@ public:
 
     map<string, Function*>* table;
 
-    void add_function(string &name, int dec_line, Type return_type, vector<Type> & api);
+    void add_function(string &name, int dec_line, Type return_type);
+
+    void add_api(string &name, vector<Type> & api);
+
+    void add_scopes(string &name, vector<int> & scopes);
 
     void add_call(string &name, int call_line, vector<Type> & api);
 
@@ -112,8 +118,8 @@ public:
 
     SymbolTable() = default;
 
-    void add_symbol(int call_line, string &name, int address, Type type);
-    int get_symbol_address(int call_line, string &name);
+    void add_symbol(int call_line, string &name, int offset, Type type);
+    int get_symbol_offset(int call_line, string &name);
     Type get_symbol_type(int call_line, string &name);
 
 };
@@ -124,6 +130,12 @@ extern Commands *commands;
 extern stack<SymbolTable>* symbol_table_stack;
 
 extern int RegisterIdx[2];
+extern SymbolTable* currnet_sym_tbl;
+
+extern FunctionTable* function_table;
+
+vector<int>* scopes_api;
+int offset = -4;
 
 void SemanticError(int line_num, const char* error){
     cerr << "Semantic error: <error description> in line number <line_number>"
