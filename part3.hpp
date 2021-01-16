@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stack>
 
 using namespace std;
 
@@ -43,25 +44,25 @@ public:
 
 
 
-class Commands{
+class Commands {
 private:
     vector<string> command_list;
 public:
     Commands();
 
     void backpatch(vector<int> list, int address);
-    
-    vector<int> merge(vector<int> list_1, vector<int> list_2);
-    
+
+    vector<int> &merge(vector<int> list_1, vector<int> list_2);
+
     void emit(string command);
-    
+
     int nextquad();
-    
-    vector<int>& makelist(int value);
-    
+
+    vector<int> &makelist(int value);
+
 };
 
-Commands *commands = new Commands();
+
 
 class Function{
 
@@ -117,7 +118,9 @@ public:
 };
 
 
+extern Commands *commands;
 
+extern stack<SymbolTable>* symbol_table_stack;
 
 void SemanticError(int line_num, const char* error){
     cerr << "Semantic error: <error description> in line number <line_number>"
