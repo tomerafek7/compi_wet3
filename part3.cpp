@@ -86,12 +86,36 @@ void FunctionTable::add_scopes(string &name, vector<int> & scopes) {
     table->at(name)->insertScopes(scopes);
 }
 
-void FunctionTable::add_call(string &name, int call_line, vector<Type> & api){
+void FunctionTable::add_call(string &name, int call_line, vector<Type> & api, vector<int> & scopes){
     // firstly, check that this function really declared
     if (!table->count(name)){
-        throw SemanticException(call_line, "Function is not declared");
+        SemanticError(call_line, "Function is not declared");
     }
-    // secondly, check that
+    if(this->table->at(name)->api->size() != api.size()){
+        if (!table->count(name)){
+            SemanticError(call_line, "Function arguments: size mismatch");//FIXME
+        }
+    }
+    Function* curr_func  = this->table->at(name);
+    vector<Type> *called_func_api = curr_func->api;
+    for(vector<Type>::iterator it = api.begin(), iter = called_func_api->begin(); it != api.end() || iter != called_func_api->end() ; ++it){
+        if(*it != *iter){
+            if (!table->count(name)){
+                SemanticError(call_line, "Function arguments type mismatch");//FIXME
+            }
+        }
+        ++iter;
+    }
+    vector<int> *called_func_scopes = curr_func->scopes;
+    for(vector<int>::iterator it = scopes.begin(); it != scopes.end() ; ++it){
+        if(find(called_func_scopes->begin(), called_func_scopes->end(), *it) != called_func_scopes->end()){
+            if (!table->count(name)){
+
+                SemanticError(call_line,  "Function scope error" );//FIXME
+            }
+        }
+    }
+    curr_func->add_call(call_line);
 }
 
 Symbol::Symbol(string &name, int address, Type type):
