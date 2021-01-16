@@ -42,25 +42,25 @@ public:
 
 
 
-class Commands{
+class Commands {
 private:
     vector<string> command_list;
 public:
     Commands();
 
     void backpatch(vector<int> list, int address);
-    
-    vector<int> merge(vector<int> list_1, vector<int> list_2);
-    
+
+    vector<int> &merge(vector<int> list_1, vector<int> list_2);
+
     void emit(string command);
-    
+
     int nextquad();
-    
-    vector<int>& makelist(int value);
-    
+
+    vector<int> &makelist(int value);
+
 };
 
-Commands *commands = new Commands();
+extern Commands *commands;
 
 class Function{
 
