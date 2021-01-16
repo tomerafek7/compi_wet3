@@ -8,7 +8,7 @@ class Commands{
     
     void backpatch(vector<int> list, int address){
         for (vector<int>::iterator it = list.begin() ; it != list.end(); ++it){
-            command_list[it] += to_string(address) 
+            command_list[it] += to_string(address);
         }
     }
     

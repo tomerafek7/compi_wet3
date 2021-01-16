@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -39,8 +40,27 @@ class Commands{
     
 }
 
+class Function{
+
+    Function();
+
+    int dec;
+    vector<int> calls;
 
 
+
+};
+
+
+class SymbolTable{
+
+    SymbolTable();
+
+    map<int, Function> table;
+
+    void add_function();
+
+};
 
 
 
