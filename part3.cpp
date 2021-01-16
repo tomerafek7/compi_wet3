@@ -15,6 +15,7 @@ stack<SymbolTable>* symbol_table_stack = new stack<SymbolTable>();
 SymbolTable* currnet_sym_tbl = new SymbolTable();
 
 
+
 void Commands::backpatch(vector<int> list, int address){
     for (vector<int>::iterator it = list.begin() ; it != list.end(); ++it){
          command_list[*it] += to_string(address);
@@ -51,16 +52,38 @@ Function::Function(int dec_line, Type return_type, vector<Type> & api):
     this->calls = new vector<int>();
 }
 
+Function::Function(int dec_line, Type return_type):
+        dec_line(dec_line), return_type(return_type)
+{
+    this->api = new vector<Type>();
+    this->calls = new vector<int>();
+}
+
+void Function::insertApi(vector<Type> & api){
+    *this->api = api;
+}
+
+void Function::insertScopes(vector<int> & scopes){
+    *this->scopes = scopes;
+}
+
 void Function::add_call(int line) {
     this->calls->push_back(line);
 }
 
-void FunctionTable::add_function(string &name, int dec_line, Type return_type, vector<Type> & api){
+void FunctionTable::add_function(string &name, int dec_line, Type return_type){
     std::pair<std::map<string,Function*>::iterator,bool> res;
-    res = table->insert(std::pair<string, Function*>(name,new Function(dec_line, return_type, api)));
+    res = table->insert(std::pair<string, Function*>(name,new Function(dec_line, return_type)));
     if (!res.second) { // there's already a function with this name
         throw SemanticException(dec_line, "Redeclaration of Function");
     }
+}
+void FunctionTable::add_api(string &name, vector<Type> & api){
+    table->at(name)->insertApi(api);
+}
+
+void FunctionTable::add_scopes(string &name, vector<int> & scopes) {
+    table->at(name)->insertScopes(scopes);
 }
 
 void FunctionTable::add_call(string &name, int call_line, vector<Type> & api){
@@ -75,16 +98,20 @@ Symbol::Symbol(string &name, int address, Type type):
 name(name), address(address), type(type){}
 
 
-void SymbolTable::add_symbol(int call_line, string &name, int address, Type type){
-    std::pair<std::map<string,Function*>::iterator,bool> res;
-    res = table->insert(std::pair<string, Function*>(name,new Function(dec_line, return_type, api)));
+void SymbolTable::add_symbol(int call_line, string &name, int offset, Type type){
+    std::pair<std::map<string,Symbol*>::iterator,bool> res;
+    res = table->insert(std::pair<string, Symbol*>(name,new Symbol(name, offset, type)));
     if (!res.second) { // there's already a function with this name
-        throw SemanticException(dec_line, "Redeclaration of Function");
+        throw SemanticException(call_line, "Redeclaration of Function");
     }
 
 }
-int SymbolTable::get_symbol_address(int call_line, string &name);
-Type SymbolTable::get_symbol_type(int call_line, string &name);
+int SymbolTable::get_symbol_offset(int call_line, string &name){
+
+}
+Type SymbolTable::get_symbol_type(int call_line, string &name){
+
+}
 
 
 
