@@ -23,11 +23,11 @@ vector<int> nextlist;
 
 
 class Commands{
-    
-    Commands();
-    
+private:
     vector<string> command_list;
-    
+public:
+    Commands();
+
     void backpatch(vector<int> list, int address);
     
     vector<int> merge(vector<int> list_1, vector<int> list_2);
@@ -36,10 +36,11 @@ class Commands{
     
     int nextquad();
     
-    vector<int> makelist(int value);
+    vector<int>& makelist(int value);
     
-}
+};
 
+Commands *commands = new Commands();
 class Function{
 
     Function();
