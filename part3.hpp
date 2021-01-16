@@ -26,7 +26,21 @@ typedef enum
     INT,
     FLOAT,
     VOID
-} type;
+} Type;
+
+class SemanticException: public exception{
+public:
+    int line_num;
+    string error;
+    SemanticException(int line_num, const char* error):
+    line_num(line_num), error(error){}
+
+    const char * what () const throw () {
+        return "Semantic error: <error description> in line number <line_number>";
+    }
+};
+
+
 
 class Commands{
 private:
@@ -50,23 +64,54 @@ Commands *commands = new Commands();
 
 class Function{
 
-    Function(int dec, type return_type, vector<type> api);
+public:
+    Function(int dec_line, Type return_type, vector<Type> & api);
 
-    int dec;
-    vector<int> calls;
-    type return_type;
-    vector<type> api;
+    int dec_line;
+    vector<int>* calls;
+    Type return_type;
+    vector<Type>* api;
+
+    void add_call(int line);
 
 };
 
 
+class FunctionTable{
+
+public:
+
+    FunctionTable();
+
+    map<string, Function*>* table;
+
+    void add_function(string &name, int dec_line, Type return_type, vector<Type> & api);
+
+    void add_call(string &name, int call_line, vector<Type> & api);
+
+};
+
+
+class Symbol{
+
+public:
+    string name;
+    int address;
+    Type type;
+
+    Symbol(string &name, int address, Type type);
+};
+
 class SymbolTable{
 
-    SymbolTable();
+public:
+    map<string,Symbol*> *table;
 
-    map<int, Function> table;
+    SymbolTable() = default;
 
-    void add_function();
+    void add_symbol(int call_line, string &name, int address, Type type);
+    int get_symbol_address(int call_line, string &name);
+    Type get_symbol_type(int call_line, string &name);
 
 };
 

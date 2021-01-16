@@ -33,16 +33,47 @@ vector<int>& Commands::makelist(int value){
 }
     
 
-Function::Function(int dec, type return_type, vector<type> api) {
-    dec = dec;
-    return_type = return_type;
-    api = api;
-
-
-
+Function::Function(int dec_line, Type return_type, vector<Type> & api):
+        dec_line(dec_line), return_type(return_type)
+{
+    this->api = new vector<Type>(api);
+    this->calls = new vector<int>();
 }
 
+void Function::add_call(int line) {
+    this->calls->push_back(line);
+}
 
+void FunctionTable::add_function(string &name, int dec_line, Type return_type, vector<Type> & api){
+    std::pair<std::map<string,Function*>::iterator,bool> res;
+    res = table->insert(std::pair<string, Function*>(name,new Function(dec_line, return_type, api)));
+    if (!res.second) { // there's already a function with this name
+        throw SemanticException(dec_line, "Redeclaration of Function");
+    }
+}
+
+void FunctionTable::add_call(string &name, int call_line, vector<Type> & api){
+    // firstly, check that this function really declared
+    if (!table->count(name)){
+        throw SemanticException(call_line, "Function is not declared");
+    }
+    // secondly, check that
+}
+
+Symbol::Symbol(string &name, int address, Type type):
+name(name), address(address), type(type){}
+
+
+void SymbolTable::add_symbol(int call_line, string &name, int address, Type type){
+    std::pair<std::map<string,Function*>::iterator,bool> res;
+    res = table->insert(std::pair<string, Function*>(name,new Function(dec_line, return_type, api)));
+    if (!res.second) { // there's already a function with this name
+        throw SemanticException(dec_line, "Redeclaration of Function");
+    }
+
+}
+int SymbolTable::get_symbol_address(int call_line, string &name);
+Type SymbolTable::get_symbol_type(int call_line, string &name);
 
 
 
