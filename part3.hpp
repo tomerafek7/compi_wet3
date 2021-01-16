@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stack>
 
 using namespace std;
 
@@ -60,7 +61,7 @@ public:
 
 };
 
-extern Commands *commands;
+
 
 class Function{
 
@@ -116,7 +117,9 @@ public:
 };
 
 
+extern Commands *commands;
 
+extern stack<SymbolTable>* symbol_table_stack;
 
 
 
