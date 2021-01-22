@@ -295,27 +295,27 @@ BEXP:   BEXP tk_or M BEXP     					                {
 			int reg = RegisterIdx[type]++;
 			switch($2->value){
 				case "==":
-					commands->emit("SEQU" + op_type + " " + op_type + to_string(reg) + " " + op_type + $1->reg + " " + op_type + $3->reg);
+					commands->emit("SEQU" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
 					commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
 					break;
 				case "<>":
-					commands->emit("SNEQ" + op_type + " " + op_type + to_string(reg) + " " + op_type + $1->reg + " " + op_type + $3->reg);
+					commands->emit("SNEQ" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
 					commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
 					break;
 				case "<":
-					commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + $1->reg + " " + op_type + $3->reg);
+					commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
 					commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
 					break;
 				case ">":
-					commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + $1->reg + " " + op_type + $3->reg);
+					commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
 					commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
 					break;
 				case "<=":
-					commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + $1->reg + " " + op_type + $3->reg);
+					commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
 					commands->emit("BREQZ " + op_type + to_string(reg) + " ");
 					break;
 				case ">=":
-					commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + $1->reg + " " + op_type + $3->reg);
+					commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
 					commands->emit("BREQZ " + op_type + to_string(reg) + " ");
 					break;
 
@@ -502,7 +502,7 @@ CALL:   id tk_lp
             int return_val_offset = 0;
             //All register are calle safe
             int stack_ptr_float = RegisterIdx[FLOAT]+1;
-            commands->emit("CITOF F" + to_string(stack_ptr_float) + "I2")
+            commands->emit("CITOF F" + to_string(stack_ptr_float) + "I2");
             for(int i=0; i < RegisterIdx[INT]; ++i){
                 return_val_offset += 4;
                 commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
@@ -536,7 +536,7 @@ CALL:   id tk_lp
             commands->emit("ADD2I I1 I1 " + to_string(return_val_offset));
             $$->value = return_val_offset;
             int func_line = commands->nextquad();
-            function_table->add_call($1->value,func_line,called_args,called_scopes);
+            function_table->add_call($1->value, func_line, called_args, called_scopes);
             commands->emit("JLINK " + to_string(func_line));
             return_val_offset -= called_args->size() + func_scopes->size() + 4;
             for(int i = 0; i<RegisterIdx[INT];++i){

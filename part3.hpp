@@ -139,7 +139,7 @@ public:
 
     vector<int>* get_scope(string &name);
 
-    void add_call(string &name, int call_line, vector<Symbol> & api, vector<int> & scopes);
+    void add_call(string &name, int call_line, vector<Symbol>* api, vector<int>* scopes);
 
     int get_dec_line(string& name);
 
