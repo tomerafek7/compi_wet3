@@ -24,6 +24,13 @@ typedef enum
     VOID
 } Type;
 
+typedef enum
+{
+    Lexical = 1,
+    Syntax = 2,
+    Semantic = 3
+} ERROR;
+
 typedef struct line {
 int quad; // command number
 string type; // Syntax variable or token type for tokens
@@ -35,19 +42,6 @@ vector<int> falselist;
 vector<int> nextlist;
 
 } Line;
-
-class SemanticException: public exception{
-public:
-    int line_num;
-    string error;
-    SemanticException(int line_num, const char* error):
-    line_num(line_num), error(error){}
-
-    const char * what () const throw () {
-        return "Semantic error: <error description> in line number <line_number>";
-    }
-};
-
 
 class Commands {
 public:
@@ -166,6 +160,7 @@ int offset = -4;
 bool in_scope = false;
 void SemanticError(int line_num, const char* error){
     cerr << "Semantic error: <error description> in line number <line_number>";
+    exit(Semantic);
 
 }
 

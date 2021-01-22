@@ -43,6 +43,7 @@ FDEFS:      FDEFS FUNC_API
 				current_sym_tbl = new SymbolTable();
 				RegisterIdx[INT] = INIT_REG_INT;
 				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
+				offset = 0;
 			}   
 			BLK
 			{
