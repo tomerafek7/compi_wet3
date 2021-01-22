@@ -35,7 +35,7 @@
 
 PROGRAM:    FDEFS   						                    {parseTree = makeNode("PROGRAM",NULL, $1);}  ;
 
-FDEFS:      FDEFS FUNC_API BLK  				                
+FDEFS:      FDEFS FUNC_API BLK
 			{
 				// definition - pass dec_line = nextquad
 				function_table->add_function($2.value,commmands->nextquad(), $2.type, args_api, scopes_api);
@@ -189,22 +189,23 @@ READ:   tk_read tk_lp LVAL tk_rp ';'
 		}	|
         
 ASSN:   LVAL tk_assign EXP ';'
-	{
-		current_sym_tbl->add_symbol(yylineno, $1.value, offset+=4, $3.type);
-    };
+        {
+            current_sym_tbl->add_symbol(yylineno, $1.value, offset+=4, $3.type);
+        };
         
 LVAL:   id                                                  	{ $$.value = $1.value; };
 	
-CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
-                                                            	commands->backpatch($2.truelist , $4.quad) ;
-                                                            	commands->backpatch($2.falselist , $8.quad) ;
-                                                            	$$.nextlist = Commands::merge($5.nextlist, $7.nextlist, $9.nextlist);
-                                                            	}   |
+CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT
+        {
+            commands->backpatch($2.truelist , $4.quad) ;
+            commands->backpatch($2.falselist , $8.quad) ;
+            $$.nextlist = Commands::merge($5.nextlist, $7.nextlist, $9.nextlist);
+        }   |
 
-        tk_if BEXP tk_then M STMT                           	{
-                                                            	commands->backpatch($2.truelist , $4.quad ) ;
-                                                            	$$.nextlist = Commands::merge ( $2.falselist, $5.nextlist );
-                                                            	}    |
+    tk_if BEXP tk_then M STMT                           	{
+        commands->backpatch($2.truelist , $4.quad ) ;
+        $$.nextlist = Commands::merge ( $2.falselist, $5.nextlist );
+        }    |
                                                                                                         
         tk_while M BEXP tk_do M STMT                        	{
                                                             	commands->backpatch($6.nextlist, $2.quad) ;
@@ -445,14 +446,12 @@ CALL:   id tk_lp
         }
         ACTIVATE_SCOPES
         {
-            vector<int>* func_scopes = function_table.add_call($1.value,yylineno,arg_list,called_scope);
             int return_val_offset = 0;
             //All register are calle safe
             int stack_ptr_float = RegisterIdx[FLOAT]+1;
             commands->emit("CITOF F" + to_string(stack_ptr_float) + "I2")
             for(int i = 0; i<RegisterIdx[INT];++i){
-                return_val_offset += 4;
-                commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
+c
             }
             for(i=0; i < RegisterIdx[FLOAT];++i){
                 return_val_offset += 4;
@@ -460,17 +459,17 @@ CALL:   id tk_lp
             }
             commands->emit("COPYI I3 0");
             commands->emit("COPYI I4 1");
-            vector<int>* func_scopes = function_table.get_api($1.value,yylineno)
+            vector<int>* func_scopes = function_table.get_scopes($1.value);
             for(vector<int>::reverse_iterator it = func_scopes->rbegin(); it != func_scopes->rend(); ++it){
                 if(find(called_scope->begin(), called_scope->end(), *it) != func_scopes.rend()){
                     return_val_offset += 4;
-                    commands->emit("STORI I4 I2 "+ to_string(return_val_offset))
+                    commands->emit("STORI I4 I2 "+ to_string(return_val_offset));
                 } else {
                     return_val_offset += 4;
-                    commands->emit("STORI I3 I2 "+ to_string(return_val_offset))
+                    commands->emit("STORI I3 I2 "+ to_string(return_val_offset));
                 }
             }
-            for(vector<Symbol>::reverse_iterator it = called_args->rbegin(); it != called_args->rend(); ++it){
+            for(vector<Symbol>::reverse_iterator it = called_args->rbegin(), iter = func_api->rbegin()); it != called_args->rend(); ++it){
                 return_val_offset += 4;
                 if(*it.type == FLOAT){
                     commands->emit("STORF F" + to_string(*it.regnum) + "F2 " + to_string(return_val_offset));
@@ -482,16 +481,17 @@ CALL:   id tk_lp
             commands->emit("ADD2I I2 I2 " + to_string(return_val_offset));
             commands->emit("ADD2I I1 I1 " + to_string(return_val_offset));
             $$.value = return_val_offset;
-
-            reg_idx_stack->push(RegisterIdx);
-            RegisterIdx[INT] = INIT_REG_INT;
-            RegisterIdx[FLOAT] = INIT_REG_FLOAT;
-            for(command->emit("JLINK " + )
+            int func_line = commands->nextquad()
+            function_table.add_call($1.value,func_line,arg_list,called_scope);
+            command->emit("JLINK " + to_string(func_line));
+            return_val_offset -= arg_list.size() + func_scopes.size() + 4;
             for(int i = 0; i<RegisterIdx[INT];++i){
-
+                commands->emit("STORF F" + to_string(i) + "F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
+                return_val_offset -= 4;
             }
             for(int i = 0; i<RegisterIdx[INT];++i){
-
+                commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
+                return_val_offset -= 4;
             }
         };
 
@@ -523,7 +523,7 @@ CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
 
 N:              { $$.nextlist = commands->makelist(commands->nextquad()) ; emit("goto ") };
 
-M:              { $$.quad = commands->nextquad }
+M:              { $$.quad = commands->nextquad(); }
 
 
 

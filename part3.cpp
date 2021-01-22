@@ -76,6 +76,17 @@ void Function::add_call(int line) {
     this->calls->push_back(line);
 }
 
+int FunctionTable::get_dec_line(string& name) {
+    return this->table->at(name)->dec_line;
+}
+vector<Symbol>* FunctionTable::get_api(string& name){
+    return new vector<Symbol>(*this->table->at(name)->api);
+}
+
+vector<int>* FunctionTable::get_scope(string &name){
+    return new vector<int>(*this->table->at(name)->scopes);
+}
+
 // dec_line = -1 if this is only a declaration.
 void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         vector<Symbol> & api, vector<int> & scopes){
@@ -113,7 +124,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
 //    table->at(name)->insertScopes(scopes);
 //}
 
-vector<int>* FunctionTable::add_call(string &name, int call_line, vector<Symbol> & api, vector<int> & scopes){
+void FunctionTable::add_call(string &name, int call_line, vector<Symbol> & api, vector<int> & scopes){
     // firstly, check that this function really declared
     if (!table->count(name)){
         SemanticError(call_line, "Function is not declared");
@@ -136,7 +147,6 @@ vector<int>* FunctionTable::add_call(string &name, int call_line, vector<Symbol>
         }
     }
     curr_func->add_call(call_line);
-    return (new vector<int>(*curr_func->scopes));
 }
 
 

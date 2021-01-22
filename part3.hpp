@@ -36,18 +36,6 @@ vector<int> nextlist;
 
 } Line;
 
-class SemanticException: public exception{
-public:
-    int line_num;
-    string error;
-    SemanticException(int line_num, const char* error):
-    line_num(line_num), error(error){}
-
-    const char * what () const throw () {
-        return "Semantic error: <error description> in line number <line_number>";
-    }
-};
-
 
 class Commands {
 public:
@@ -136,8 +124,13 @@ public:
 
     void add_scopes(string &name, vector<int> & scopes);
 
-    vector<int>* add_call(string &name, int call_line, vector<Symbol> & api, vector<int> & scopes);
+    vector<Symbol>* get_api(string& name);
 
+    vector<int>* get_scope(string &name);
+
+    void add_call(string &name, int call_line, vector<Symbol> & api, vector<int> & scopes);
+
+    int get_dec_line(string& name);
 };
 
 
