@@ -1,6 +1,8 @@
 %{
     #include "part3.hpp"
     #include <stdio.h>
+	#include <iostream>
+	#include <string>
     using namespace std;
     
     extern char *yytext;
@@ -142,7 +144,7 @@ STMT:
         BLK         						                    {}  |
         tk_scope tk_lp integernum tk_rp
 		{
-			if (*scopes_iter != $3->value){
+			if (*scopes_iter != stoi($3->value)){
 				SemanticError(yylineno, "Scope isn't in function's scope list OR scopes are in wrong order");
 			}
 			if(in_scope){
@@ -167,7 +169,6 @@ STMT:
 RETURN: tk_return EXP ';'
 		{
 			string op_type = ($3->type == INT) ? "I" : "F";
-			commands->emit("STOR" + op_type + + " " +
 			int addr_reg_i = RegisterIdx[FLOAT]++;
 			if ($3->type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
@@ -198,14 +199,14 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
         tk_write tk_lp str tk_rp ';'
 		{
 			char* str = $3->value;
-			while(str){
-				if(*str == "\\"){ // the first \ is for escaped..
+			while(*str){
+				if(*str == '\\'){ // the first \ is for escaped..
 					str++;
 					switch(*str){
-						case "n":
+						case 'n':
 							commands->emit("PRNTC 10"); // 10 is LF in ascii
 							break;
-						case "t":
+						case 't':
 							commands->emit("PRNTC 9"); // 9 is TAB in ascii
 							break;
 						case '"':
