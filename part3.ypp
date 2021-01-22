@@ -49,7 +49,8 @@ FDEFS:      FDEFS FUNC_API
 			BLK
 			{
 				// popping the symbol table
-				current_sym_tbl = symbol_table_stack->pop();
+				current_sym_tbl = symbol_table_stack->top();
+				symbol_table_stack->pop();
 			}
 			|
 
@@ -103,7 +104,8 @@ BLK: 	'{'
 		STLIST '}'
 		{
 			// popping the symbol table
-			current_sym_tbl = symbol_table_stack->pop();
+			current_sym_tbl = symbol_table_stack->top();
+			symbol_table_stack->pop();
 		}	;
 
 DCL:    id ':' TYPE                 				            {
@@ -576,7 +578,7 @@ CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
 
 N:
                 {
-                    $$->nextlist = commands->makelist(commands->nextquad()) ; commands->emit("UJUMP ")
+                    $$->nextlist = commands->makelist(commands->nextquad()) ; commands->emit("UJUMP ");
                 };
 
 M:
