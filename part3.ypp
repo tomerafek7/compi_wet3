@@ -198,7 +198,8 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
 
         tk_write tk_lp str tk_rp ';'
 		{
-			char* str = $3->value.c_str();
+			char *str = new char[$3->value.length() + 1];
+			strcpy(str, $3->value.c_str());
 			while(*str){
 				if(*str == '\\'){ // the first \ is for escaped..
 					str++;
