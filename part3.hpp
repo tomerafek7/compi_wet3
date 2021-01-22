@@ -10,6 +10,10 @@
 #include <stack>
 #include <iostream>
 
+
+
+#define INIT_REG_INT 3
+#define INIT_REG_FLOAT 0
 using namespace std;
 
 typedef enum
@@ -97,7 +101,7 @@ public:
 
     void add_scopes(string &name, vector<int> & scopes);
 
-    void add_call(string &name, int call_line, vector<Type> & api, vector<int> & scopes);
+    vector<int>* add_call(string &name, int call_line, vector<Type> & api, vector<int> & scopes);
 
 };
 
@@ -132,9 +136,13 @@ extern stack<SymbolTable>* symbol_table_stack;
 
 extern int RegisterIdx[2];
 
+extern stack<int[2]>* reg_idx_stack;
+
 extern SymbolTable* current_sym_tbl;
 
 extern FunctionTable* function_table;
+
+extern stack<int>* rtrn_vl_ofst_stk;
 
 vector<int>* scopes_api;
 

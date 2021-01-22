@@ -46,11 +46,11 @@ FDEFS:      FDEFS FUNC_API BLK  				                {$$ = makeNode("FDEFS",NULL,
             
 FUNC_API:   TYPE id
                                                                 {
-                                                                function_table.add_function($2.value,$1.quad, $1.value);
+                                                                function_table->add_function($2.value,commmands->nextquad(), $1.value);
                                                                 }
 tk_lp
                                                                 {
-                                                                symbol_table_stack.push(currnet_sym_tbl);
+                                                                symbol_table_stack->push(currnet_sym_tbl);
                                                                 currnet_sym_tbl = new SymbolTable();
                                                                 offset = -4;
                                                                 }
@@ -60,7 +60,7 @@ FUNC_ARGS tk_rp
                                                                 }
 
 SCOPES_API    	                                                {
-                                                                function_table.add_scopes($2.value,scopes_api);
+                                                                function_table->add_scopes($2.value,scopes_api);
                                                                 };
 
 SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{}      |
@@ -192,91 +192,91 @@ BEXP:   BEXP tk_or M BEXP     					                {
 																} ;
         
 EXP:    EXP addop EXP       					                
-		{
-			int reg1, reg2;
-			// both are integers:
-			if($1.type == INT && $3.type == INT){
-				$$.type = INT;
-				reg1 = $1.regnum;
-				reg2 = $3.regnum;
-				// no casting is needed
-			// both are floats:
-			} else if($1.type == FLOAT && $3.type == FLOAT){
-				$$.type = FLOAT;
-				reg1 = $1.regnum;
-				reg2 = $3.regnum;
-				// no casting is needed
-			} else{ // one is integer and the other is float
-				$$.type = FLOAT;
-				if($1.type == INT){ // first is integer
-					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($1.regnum) + "F" + to_string(reg1));
-					reg2 = $3.regnum;
-				} else{ // second is integer
-					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($3.regnum) + "F" + to_string(reg2));
-					reg1 = $1.regnum;
-				}
-			}
-			
-			// allocate register for parent
-			$$.regnum = RegisterIdx[$$.type];
-			// different operation kind based on type:
-			string op_type;
-			if($$.type == INT){
-				op_type = "I"
-			} else{
-				op_type = "F"
-			}
-			
-			if($2.value == "+"){ // addition
-				commands->emit("ADD2" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
-			} else{ // subtraction
-				commands->emit("SUBT" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
-			}
-				
-		}	|
-		
+                                                                {
+                                                                    int reg1, reg2;
+                                                                    // both are integers:
+                                                                    if($1.type == INT && $3.type == INT){
+                                                                        $$.type = INT;
+                                                                        reg1 = $1.regnum;
+                                                                        reg2 = $3.regnum;
+                                                                        // no casting is needed
+                                                                    // both are floats:
+                                                                    } else if($1.type == FLOAT && $3.type == FLOAT){
+                                                                        $$.type = FLOAT;
+                                                                        reg1 = $1.regnum;
+                                                                        reg2 = $3.regnum;
+                                                                        // no casting is needed
+                                                                    } else{ // one is integer and the other is float
+                                                                        $$.type = FLOAT;
+                                                                        if($1.type == INT){ // first is integer
+                                                                            reg1 = RegisterIdx[FLOAT]++;
+                                                                            commands->emit("CITOF " + "I" + to_string($1.regnum) + "F" + to_string(reg1));
+                                                                            reg2 = $3.regnum;
+                                                                        } else{ // second is integer
+                                                                            reg2 = RegisterIdx[FLOAT]++;
+                                                                            commands->emit("CITOF " + "I" + to_string($3.regnum) + "F" + to_string(reg2));
+                                                                            reg1 = $1.regnum;
+                                                                        }
+                                                                    }
+
+                                                                    // allocate register for parent
+                                                                    $$.regnum = RegisterIdx[$$.type];
+                                                                    // different operation kind based on type:
+                                                                    string op_type;
+                                                                    if($$.type == INT){
+                                                                        op_type = "I"
+                                                                    } else{
+                                                                        op_type = "F"
+                                                                    }
+
+                                                                    if($2.value == "+"){ // addition
+                                                                        commands->emit("ADD2" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+                                                                    } else{ // subtraction
+                                                                        commands->emit("SUBT" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+                                                                    }
+
+                                                                }	|
+
         EXP mulop EXP       					                
-		{
-			int reg1, reg2;
-			// both are integers:
-			if($1.type == INT && $3.type == INT){
-				$$.type = INT;
-				reg1 = $1.regnum;
-				reg2 = $3.regnum;
-				// no casting is needed
-			// both are floats:
-			} else if($1.type == FLOAT && $3.type == FLOAT){
-				$$.type = FLOAT;
-				reg1 = $1.regnum;
-				reg2 = $3.regnum;
-				// no casting is needed
-			} else{ // one is integer and the other is float
-				$$.type = FLOAT;
-				if($1.type == INT){ // first is integer
-					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($1.regnum) + "F" + to_string(reg1));
-					reg2 = $3.regnum;
-				} else{ // second is integer
-					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($3.regnum) + "F" + to_string(reg2));
-					reg1 = $1.regnum;
-				}
-			}
-			
-			// allocate register for parent
-			$$.regnum = RegisterIdx[$$.type];
-			// different operation kind based on type:
-			string op_type = ($$.type == INT) ? "I" : "F";
-			
-			if($2.value == "*"){ // multiplication
-				commands->emit("MULT" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
-			} else{ // division
-				commands->emit("DIVD" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
-			}
-	
-		}  |
+                                                                {
+                                                                    int reg1, reg2;
+                                                                    // both are integers:
+                                                                    if($1.type == INT && $3.type == INT){
+                                                                        $$.type = INT;
+                                                                        reg1 = $1.regnum;
+                                                                        reg2 = $3.regnum;
+                                                                        // no casting is needed
+                                                                    // both are floats:
+                                                                    } else if($1.type == FLOAT && $3.type == FLOAT){
+                                                                        $$.type = FLOAT;
+                                                                        reg1 = $1.regnum;
+                                                                        reg2 = $3.regnum;
+                                                                        // no casting is needed
+                                                                    } else{ // one is integer and the other is float
+                                                                        $$.type = FLOAT;
+                                                                        if($1.type == INT){ // first is integer
+                                                                            reg1 = RegisterIdx[FLOAT]++;
+                                                                            commands->emit("CITOF " + "I" + to_string($1.regnum) + "F" + to_string(reg1));
+                                                                            reg2 = $3.regnum;
+                                                                        } else{ // second is integer
+                                                                            reg2 = RegisterIdx[FLOAT]++;
+                                                                            commands->emit("CITOF " + "I" + to_string($3.regnum) + "F" + to_string(reg2));
+                                                                            reg1 = $1.regnum;
+                                                                        }
+                                                                    }
+
+                                                                    // allocate register for parent
+                                                                    $$.regnum = RegisterIdx[$$.type];
+                                                                    // different operation kind based on type:
+                                                                    string op_type = ($$.type == INT) ? "I" : "F";
+
+                                                                    if($2.value == "*"){ // multiplication
+                                                                        commands->emit("MULT" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+                                                                    } else{ // division
+                                                                        commands->emit("DIVD" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+                                                                    }
+
+                                                                }  |
 
         tk_lp EXP tk_rp         				                
 		{
@@ -285,13 +285,13 @@ EXP:    EXP addop EXP
 			
         }  |
 
-        tk_lp TYPE tk_rp EXP    				                
-		{
-			$$.type = ($2.type == "int") ? INT : FLOAT;
-			$$.regnum = RegisterIdx[$$.type]++;
-			string op_type = ($$.type == INT) ? "I" : "F";
-			emit("COPY" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string($4.regnum));
-		}  |
+                                                                tk_lp TYPE tk_rp EXP
+                                                                {
+                                                                    $$.type = ($2.type == "int") ? INT : FLOAT;
+                                                                    $$.regnum = RegisterIdx[$$.type]++;
+                                                                    string op_type = ($$.type == INT) ? "I" : "F";
+                                                                    emit("COPY" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string($4.regnum));
+                                                                }  |
 
         id              					                    
 		{ 
@@ -301,7 +301,7 @@ EXP:    EXP addop EXP
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
 				emit("ADD2I I" + to_string(addr_reg) + " I1 " + to_string(offset));
-			} else{ // offset <= 0 
+			} else{ // offset <= 0
 				emit("SUBTI I" + to_string(addr_reg) + " I1 " + to_string(-offset));
 			}
 			if ($$.type == FLOAT){ // float - casting is needed
@@ -311,11 +311,11 @@ EXP:    EXP addop EXP
 			} else{ // integer - no casting is needed
 				emit("LOADI I" + to_string($$.regnum) + " I" + to_string(addr_reg_i) + " 0");
 			}
-			
+
 		}	|
 
-        NUM             					                    
-		{ 
+        NUM
+		{
 			$$.type = $1.type;
 			$$.value = $1.value;
 			$$.regnum = RegisterIdx[$$.type]++;
@@ -337,20 +337,45 @@ EXP:    EXP addop EXP
 		}    ;
 
         
-NUM:    integernum 						                        
-		{ 
+NUM:    integernum
+		{
 			$$.type = INT;
 			$$.value = $1.value;
 		}  |
 
-        realnum    						                        
-		{ 
+        realnum
+		{
 			$$.type = FLOAT;
-			$$.value = $1.value;		
+			$$.value = $1.value;
 		}  ;
         
 CALL: id tk_lp CALL_ARGS tk_rp ACTIVATE_SCOPES  		        {
-                                                                if(function_table.add_scopes($2.value,scopes_api);.)//FIXME continue call implemention
+                                                                vector<int>* cur_scopes = function_table.add_call($2.value,scopes_api);
+                                                                return_val_offset = 0;
+                                                                //All register are calle safe
+                                                                for(int i = 0; i<RegisterIdx[INT];++i){}
+                                                                    commands->emit("STORI " + "I" + to_string(i*4) + "I2 " + to_string(i*4));
+                                                                    return_val_offset +=4;
+                                                                }
+                                                                commands->emit("ADD2I I2 I2 " + to_string(i*4));
+                                                                loda
+                                                                for(i = 0; i<RegisterIdx[FLOAT];++i){
+                                                                    commands->emit("STORF " + "F" + to_string(i) + "F" + + " " + to_string(i*4) );
+                                                                    return_val_offset +=4;
+                                                                }
+                                                                for(vector<int>::reverse_iterator it = cur_scopes->rbegin(); it != cur_scopes->rend(); ++it){
+
+                                                                }
+                                                                reg_idx_stack->push(RegisterIdx);
+                                                                RegisterIdx[INT] = INIT_REG_INT;
+                                                                RegisterIdx[FLOAT] = INIT_REG_FLOAT;
+                                                                for(command->emit("JLINK " + )
+                                                                for(int i = 0; i<RegisterIdx[INT];++i){
+
+                                                                }
+                                                                for(int i = 0; i<RegisterIdx[INT];++i){
+
+                                                                }
                                                                 }    ;
 
 ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp  { $$ = makeNode("ACTIVATE_SCOPES",NULL, $1);
