@@ -73,9 +73,6 @@ public:
     Type type;
     string name;
 
-    inline bool operator==(const Arg& arg){
-        return type == arg.type && name == arg.name;
-    }
 };
 
 
@@ -120,11 +117,18 @@ public:
 class Symbol{
 
 public:
-    string name;
-    int address;
-    Type type;
 
-    Symbol(string &name, int address, Type type);
+    int offset;
+    Type type;
+    int reg;
+    string name;
+
+    Symbol(int offset, Type type, string &name);
+    Symbol(int offset, Type type, int reg , string &name);
+    Symbol(Type type, string &name);
+    inline bool operator==(const Symbol& sym){
+        return type == sym.type && name == sym.name;
+    }
 };
 
 class SymbolTable{

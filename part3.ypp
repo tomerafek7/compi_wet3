@@ -305,7 +305,7 @@ EXP:    EXP addop EXP
 			}
 			
 			// allocate register for parent
-			$$.regnum = RegisterIdx[$$.type];
+			$$.regnum = RegisterIdx[$$.type]++;
 			// different operation kind based on type:
 			string op_type;
 			if($$.type == INT){
@@ -351,7 +351,7 @@ EXP:    EXP addop EXP
 			}
 			
 			// allocate register for parent
-			$$.regnum = RegisterIdx[$$.type];
+			$$.regnum = RegisterIdx[$$.type]++;
 			// different operation kind based on type:
 			string op_type = ($$.type == INT) ? "I" : "F";
 			
@@ -435,41 +435,68 @@ NUM:    integernum
 			$$.value = $1.value;
 		}  ;
         
-CALL: id tk_lp CALL_ARGS tk_rp ACTIVATE_SCOPES  		        {
-                                                                vector<int>* cur_scopes = function_table.add_call($2.value,scopes_api);
-                                                                return_val_offset = 0;
-                                                                //All register are calle safe
-                                                                for(int i = 0; i<RegisterIdx[INT];++i){}
-                                                                    commands->emit("STORI " + "I" + to_string(i*4) + "I2 " + to_string(i*4));
-                                                                    return_val_offset +=4;
-                                                                }
-                                                                commands->emit("ADD2I I2 I2 " + to_string(i*4));
-                                                                loda
-                                                                for(i = 0; i<RegisterIdx[FLOAT];++i){
-                                                                    commands->emit("STORF " + "F" + to_string(i) + "F" + + " " + to_string(i*4) );
-                                                                    return_val_offset +=4;
-                                                                }
-                                                                for(vector<int>::reverse_iterator it = cur_scopes->rbegin(); it != cur_scopes->rend(); ++it){
+CALL:   id tk_lp CALL_ARGS tk_rp
+        {
+            scopes_api = new vector<int>();
+        }
+        ACTIVATE_SCOPES
+        {
+            vector<int>* func_scopes = function_table.add_call($1.value,yylineno,arg_list,scopes_api);
+            int return_val_offset = 0;
+            //All register are calle safe
+            int stack_ptr_float = RegisterIdx[FLOAT]+1;
+            commands->emit("CITOF F" + to_string(stack_ptr_float) + "I2")
+            for(int i = 0; i<RegisterIdx[INT];++i){
+                return_val_offset += 4;
+                commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
+            }
+            for(i=0; i < RegisterIdx[FLOAT];++i){
+                return_val_offset += 4;
+                commands->emit("STORF F" + to_string(i) + "F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
+            }
+            commands->emit("COPYI I3 0");
+            commands->emit("COPYI I4 1");
+            vector<int>* func_scopes = function_table.get_api($1.value,yylineno)
+            for(vector<int>::reverse_iterator it = func_scopes->rbegin(); it != func_scopes->rend(); ++it){
+                if(find(scopes_api->begin(), scopes_api->end(), *it) != func_scopes.rend()){
+                    return_val_offset += 4;
+                    commands->emit("STORI I4 I2 "+ to_string(return_val_offset))
+                } else {
+                    return_val_offset += 4;
+                    commands->emit("STORI I3 I2 "+ to_string(return_val_offset))
+                }
+            }
+            for(vector<Arg>::reverse_iterator it = args_api->rbegin(); it != args_api->rend(); ++it){
+                return_val_offset += 4;
+                if(*it.type == FLOAT){
+                    commands->emit("STORF F" + to_string(*it.regnum) + "F2 " + to_string(return_val_offset));
+                } else {
+                    commands->emit("STORI I" + to_string(*it.regnum) + "I2 " + to_string(return_val_offset));
+                }
 
-                                                                }
-                                                                reg_idx_stack->push(RegisterIdx);
-                                                                RegisterIdx[INT] = INIT_REG_INT;
-                                                                RegisterIdx[FLOAT] = INIT_REG_FLOAT;
-                                                                for(command->emit("JLINK " + )
-                                                                for(int i = 0; i<RegisterIdx[INT];++i){
+            }
+            return_val_offset += 4;
+            commands->emit("ADD2I I2 I2 " + to_string(return_val_offset));
+            commands->emit("ADD2I I1 I1 " + to_string(return_val_offset));
 
-                                                                }
-                                                                for(int i = 0; i<RegisterIdx[INT];++i){
 
-                                                                }
-                                                                }    ;
+            reg_idx_stack->push(RegisterIdx);
+            RegisterIdx[INT] = INIT_REG_INT;
+            RegisterIdx[FLOAT] = INIT_REG_FLOAT;
+            for(command->emit("JLINK " + )
+            for(int i = 0; i<RegisterIdx[INT];++i){
 
-ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp  { $$ = makeNode("ACTIVATE_SCOPES",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);
-                                                                concatList($1, $4);
-                                                                concatList($1, $5); }    |
-                                                                { $$ = makeNode("ACTIVATE_SCOPES",NULL,makeNode("EPSILON",NULL, NULL));  };
+            }
+            for(int i = 0; i<RegisterIdx[INT];++i){
+
+            }
+        };
+
+ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
+                {
+
+                }    |
+                ;
 
 SCOPES_LIST:    SCOPES_LIST tk_comma integernum     		    { scopes_api->push_back($3.value); }    |
                 integernum                          		    { scopes_api->push_back($1.value); }    ;
