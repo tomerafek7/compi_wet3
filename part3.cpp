@@ -232,29 +232,29 @@ int main(int argc, char** argv){
     // print header:
     file << "<header>" << endl;
     file << "<unimplemented>";
-    vector<Function> unimplemented = function_table->get_all_unimplemented();
-    for(auto it = unimplemented.begin(); it != unimplemented.end(); ++it){
-        file << *it->name << ",[";
-        for(auto s_it = *it->scopes->begin(); s_it != *it->scopes->end(); ++s_it){
-            file << to_string(s_it) << ";";
+    vector<Function>* unimplemented = function_table->get_all_unimplemented();
+    for(auto it = unimplemented->begin(); it != unimplemented->end(); ++it){
+        file << it->name << ",[";
+        for(auto s_it = it->scopes->begin(); s_it != it->scopes->end(); ++s_it){
+            file << to_string(*s_it) << ";";
         }
         file << "],";
-        for(auto c_it = *it->scopes->begin(); c_it != *it->scopes->end(); ++c_it){
-            file << to_string(c_it) << ",";
+        for(auto c_it = it->scopes->begin(); c_it != it->scopes->end(); ++c_it){
+            file << to_string(*c_it) << ",";
         }
         file << " ";
     }
     file << endl;
     file << "<implemented>" << endl;
-    vector<Function> implemented = function_table->get_all_implemented();
-    for(auto it = implemented.begin(); it != implemented.end(); ++it){
-        file << *it->name << ",[";
-        for(auto s_it = *it->scopes->begin(); s_it != *it->scopes->end(); ++s_it){
-            file << to_string(s_it) << ";";
+    vector<Function>* implemented = function_table->get_all_implemented();
+    for(auto it = implemented->begin(); it != implemented->end(); ++it){
+        file << it->name << ",[";
+        for(auto s_it = it->scopes->begin(); s_it != it->scopes->end(); ++s_it){
+            file << to_string(*s_it) << ";";
         }
         file << "],";
-        for(auto c_it = *it->scopes->begin(); c_it != *it->scopes->end(); ++c_it){
-            file << to_string(c_it) << ",";
+        for(auto c_it = it->scopes->begin(); c_it != it->scopes->end(); ++c_it){
+            file << to_string(*c_it) << ",";
         }
         file << " ";
     }
