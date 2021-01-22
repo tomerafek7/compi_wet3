@@ -506,7 +506,7 @@ CALL:   id tk_lp
                 return_val_offset += 4;
                 commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
             }
-            for(i=0; i < RegisterIdx[FLOAT];++i){
+            for(int i=0; i < RegisterIdx[FLOAT];++i){
                 return_val_offset += 4;
                 commands->emit("STORF F" + to_string(i) + "F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
             }
