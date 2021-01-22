@@ -9,7 +9,8 @@
 #include <map>
 #include <stack>
 #include <iostream>
-
+#include <assert.h>
+#include <algorithm>
 
 
 #define INIT_REG_INT 3
@@ -48,11 +49,10 @@ public:
 };
 
 
-
 class Commands {
-private:
-    vector<string> command_list;
 public:
+    vector<string> command_list;
+
     Commands();
 
     void backpatch(vector<int> list, int address);
@@ -68,18 +68,29 @@ public:
 };
 
 
+class Arg{
+public:
+    Type type;
+    string name;
+
+    inline bool operator==(const Arg& arg){
+        return type == arg.type && name == arg.name;
+    }
+};
+
 
 class Function{
 
 public:
-    Function(int dec_line, Type return_type, vector<Type> & api);
-    Function(int dec_line, Type return_type);
-    void insertApi(vector<Type> & api);
-    void insertScopes(vector<int> & scopes);
+    Function(int dec_line, Type return_type, vector<Arg> & api, vector<int> & scopes);
+    // dec_line = -1 if this is only a declaration.
+//    Function(int dec_line, Type return_type);
+//    void insertApi(vector<Type> & api);
+//    void insertScopes(vector<int> & scopes);
     int dec_line;
     vector<int>* calls;
     Type return_type;
-    vector<Type>* api;
+    vector<Arg>* api;
     vector<int>* scopes;
 
     void add_call(int line);
@@ -95,7 +106,7 @@ public:
 
     map<string, Function*>* table;
 
-    void add_function(string &name, int dec_line, Type return_type);
+    void add_function(string &name, int dec_line, Type return_type, vector<Arg> & api, vector<int> & scopes);
 
     void add_api(string &name, vector<Type> & api);
 
@@ -145,6 +156,7 @@ extern FunctionTable* function_table;
 extern stack<int>* rtrn_vl_ofst_stk;
 
 vector<int>* scopes_api;
+vector<Arg>* args_api;
 
 int offset = -4;
 

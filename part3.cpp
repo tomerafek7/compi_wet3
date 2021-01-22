@@ -49,46 +49,70 @@ vector<int>& Commands::makelist(int value){
 }
     
 
-Function::Function(int dec_line, Type return_type, vector<Type> & api):
+Function::Function(int dec_line, Type return_type, vector<Arg> & api,
+                    vector<int> & scopes):
         dec_line(dec_line), return_type(return_type)
 {
-    this->api = new vector<Type>(api);
+    this->api = new vector<Arg>(api);
+    this->scopes = new vector<int>(scopes);
     this->calls = new vector<int>();
 }
 
-Function::Function(int dec_line, Type return_type):
-        dec_line(dec_line), return_type(return_type)
-{
-    this->api = new vector<Type>();
-    this->calls = new vector<int>();
-}
+//Function::Function(int dec_line, Type return_type):
+//        dec_line(dec_line), return_type(return_type)
+//{
+//    this->api = new vector<Type>();
+//    this->calls = new vector<int>();
+//}
 
-void Function::insertApi(vector<Type> & api){
-    *this->api = api;
-}
-
-void Function::insertScopes(vector<int> & scopes){
-    *this->scopes = scopes;
-}
+//void Function::insertApi(vector<Type> & api){
+//    *this->api = api;
+//}
+//
+//void Function::insertScopes(vector<int> & scopes){
+//    *this->scopes = scopes;
+//}
 
 void Function::add_call(int line) {
     this->calls->push_back(line);
 }
 
-void FunctionTable::add_function(string &name, int dec_line, Type return_type){
+// dec_line = -1 if this is only a declaration.
+void FunctionTable::add_function(string &name, int dec_line, Type return_type,
+        vector<Arg> & api, vector<int> & scopes){
     std::pair<std::map<string,Function*>::iterator,bool> res;
-    res = table->insert(std::pair<string, Function*>(name,new Function(dec_line, return_type)));
-    if (!res.second) { // there's already a function with this name
-        throw SemanticException(dec_line, "Redeclaration of Function");
+    res = table->insert(std::pair<string, Function*>(name,
+                           new Function(dec_line, return_type, api, scopes)));
+    if (!res.second && dec_line != -1) { // there's already a function with this name
+        // check if this function is only declared / already implemented
+        if(res.first->second->dec_line == -1){ // only declared
+            // check if api & scopes are similar:
+            if(api != *res.first->second->api || scopes != *res.first->second->scopes){
+                SemanticError(dec_line, "Wrong API/Scopes for implementation of function");
+                // assuming SemanticError calls exit()
+            }
+            // if they are:
+            // 1. update the dec_line
+            table->at(name)->dec_line = dec_line;
+            // 2. update the dec_line for all calls:
+            for(auto it = table->at(name)->calls->begin(); it != scopes.end() ; ++it){
+                commands->command_list[*it] = "JLINK " + to_string(dec_line);
+            }
+        } else{ // already implemented
+            SemanticError(dec_line, "ReImplementation of Function");
+        }
+    } else{ // 2nd declaration
+        SemanticError(dec_line, "Redeclaration of Function");
     }
 }
-void FunctionTable::add_api(string &name, vector<Type> & api){
-    table->at(name)->insertApi(api);
-}
 
-void FunctionTable::add_scopes(string &name, vector<int> & scopes) {
-    table->at(name)->insertScopes(scopes);
-}
+//void FunctionTable::add_api(string &name, vector<Type> & api){
+//    table->at(name)->insertApi(api);
+//}
+//
+//void FunctionTable::add_scopes(string &name, vector<int> & scopes) {
+//    table->at(name)->insertScopes(scopes);
+//}
 
 vector<int>* FunctionTable::add_call(string &name, int call_line, vector<Type> & api, vector<int> & scopes){
     // firstly, check that this function really declared

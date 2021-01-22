@@ -35,58 +35,73 @@
 
 PROGRAM:    FDEFS   						                    {parseTree = makeNode("PROGRAM",NULL, $1);}  ;
 
-FDEFS:      FDEFS FUNC_API BLK  				                {$$ = makeNode("FDEFS",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);}   |
+FDEFS:      FDEFS FUNC_API BLK  				                
+			{
+				// definition - pass dec_line = nextquad
+				function_table->add_function($2.value,commmands->nextquad(), $2.type, args_api, scopes_api);
+			}   |
 
-            FDEFS FUNC_API ';'  				                {$$ = makeNode("FDEFS",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);}   |
-                                                                {$$ = makeNode("FDEFS",NULL,makeNode("EPSILON",NULL, NULL));};
-            
-FUNC_API:   TYPE id
+            FDEFS FUNC_API ';'  				                
+			{   // declaration - pass dec_line = - 1
+				function_table->add_function($2.value,-1, $2.type, args_api, scopes_api);	
+			}	|
+			// epsilon - do nothing
+            ;
+			
+FUNC_API:   TYPE id tk_lp
                                                                 {
-                                                                function_table->add_function($2.value,commmands->nextquad(), $1.value);
-                                                                }
-tk_lp
-                                                                {
+																$$.value = $2.value;
+																$$.type = $1.type;
                                                                 symbol_table_stack->push(currnet_sym_tbl);
                                                                 currnet_sym_tbl = new SymbolTable();
                                                                 offset = -4;
+																args_api = new vector<Arg>();
                                                                 }
-FUNC_ARGS tk_rp
+			FUNC_ARGS tk_rp
                                                                 {
                                                                 scopes_api = new vector<int>();
                                                                 }
 
-SCOPES_API    	                                                {
-                                                                function_table->add_scopes($2.value,scopes_api);
-                                                                };
+			SCOPES_API    	                                    ;
+                                                                
 
 SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{}      |
-                                                            	{};
+                                                            	; // epsilon
             
 FUNC_ARGS:  	FUNC_ARGLIST    				                {}      |
-                                                                {};
+                                                                ; // epsilon
 
-FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL  			            {}      |
-              	DCL                   				            {};
+FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL  			            
+				{
+					args_api->push_back(new Arg($3.type, $3.value));
+				}	|
+              	DCL                   				            
+				{
+					args_api->push_back(new Arg($1.type, $1.value));
+				};
               
 BLK: 	'{' STLIST '}'                 				            { $$ = makeNode("BLK",NULL, $1);
                                                                 concatList($1, $2);
                                     				            concatList($1, $3);}    ;
 
-DCL:    id ':' TYPE                 				            { current_sym_tbl->add_symbol(yylineno, $1.name, offset, $3.type);
+DCL:    id ':' TYPE                 				            {
+																offset+=4;
+																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
                                                                 $$.type = $3.type;
-                                                                offset-=4;
+																$$.value = $1.value;
+                                                                commands->emit("ADD2I I2 I2 4"); // I2 += 4
                                                                 }    |
-        id tk_comma DCL             				            { current_sym_tbl(yylineno, $1.name, offset, $3.type);
-                                                                offset-=4;
+																
+        id tk_comma DCL             				            {
+																offset+=4;
+																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
+																$$.type = $3.type;
+                                                                commands->emit("ADD2I I2 I2 4"); // I2 += 4
                                     				            }    ;
                                     
-TYPE:   tk_int     						                        { $$ = makeNode("TYPE",NULL, $1); }    |
-        tk_float   						                        { $$ = makeNode("TYPE",NULL, $1); }    |
-        tk_void    						                        { $$ = makeNode("TYPE",NULL, $1); }    ;
+TYPE:   tk_int     						                        { $$.type = INT; }		|
+        tk_float   						                        { $$.type = FLOAT; }    |
+        tk_void    						                        { $$.type = VOID; }	    ;
         
 STLIST: STLIST STMT 						                    { $$ = makeNode("STLIST",NULL, $1);
                                                                 concatList($1, $2);}    |
