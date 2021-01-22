@@ -6,6 +6,8 @@
 
 Commands::Commands(){}
 
+//FIXME move global variables to main
+
 Commands *commands = new Commands();
 
 FunctionTable* function_table = new FunctionTable();
@@ -14,7 +16,9 @@ stack<SymbolTable>* symbol_table_stack = new stack<SymbolTable>();
 
 SymbolTable* currnet_sym_tbl = new SymbolTable();
 
+stack<int[2]>* reg_idx_stack = new stack<int[2]>();
 
+stack<int>* rtrn_vl_ofst_stk = new stack<int>();
 
 void Commands::backpatch(vector<int> list, int address){
     for (vector<int>::iterator it = list.begin() ; it != list.end(); ++it){
@@ -86,7 +90,7 @@ void FunctionTable::add_scopes(string &name, vector<int> & scopes) {
     table->at(name)->insertScopes(scopes);
 }
 
-void FunctionTable::add_call(string &name, int call_line, vector<Type> & api, vector<int> & scopes){
+vector<int>* FunctionTable::add_call(string &name, int call_line, vector<Type> & api, vector<int> & scopes){
     // firstly, check that this function really declared
     if (!table->count(name)){
         SemanticError(call_line, "Function is not declared");
@@ -116,6 +120,7 @@ void FunctionTable::add_call(string &name, int call_line, vector<Type> & api, ve
         }
     }
     curr_func->add_call(call_line);
+    return (new vector<int>(*curr_func->scopes));
 }
 
 Symbol::Symbol(string &name, int address, Type type):

@@ -46,11 +46,11 @@ FDEFS:      FDEFS FUNC_API BLK  				                {$$ = makeNode("FDEFS",NULL,
             
 FUNC_API:   TYPE id
                                                                 {
-                                                                function_table.add_function($2.value,$1.quad, $1.value);
+                                                                function_table->add_function($2.value,commmands->nextquad(), $1.value);
                                                                 }
 tk_lp
                                                                 {
-                                                                symbol_table_stack.push(currnet_sym_tbl);
+                                                                symbol_table_stack->push(currnet_sym_tbl);
                                                                 currnet_sym_tbl = new SymbolTable();
                                                                 offset = -4;
                                                                 }
@@ -60,7 +60,7 @@ FUNC_ARGS tk_rp
                                                                 }
 
 SCOPES_API    	                                                {
-                                                                function_table.add_scopes($2.value,scopes_api);
+                                                                function_table->add_scopes($2.value,scopes_api);
                                                                 };
 
 SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{}      |
@@ -111,10 +111,10 @@ STMT:   DCL ';'     						                    {
                                                                 concatList($1, $4);
                                                                 concatList($1, $5);};
         
-RETURN: tk_return EXP ';'   					                
+RETURN: tk_return EXP ';'
 		{
 			string op_type = ($3.type == INT) ? "I" : "F";
-			commands->emit("STOR" + op_type + + " " + 
+			commands->emit("STOR" + op_type + + " " +
 			int addr_reg_i = RegisterIdx[FLOAT]++;
 			if ($3.type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
@@ -127,8 +127,8 @@ RETURN: tk_return EXP ';'
 			commands->emit("COPYI I2 I1");
 			commands->emit("RETRN");
 		}	|
-		
-        tk_return ';'       					                
+
+        tk_return ';'
 		{
 			// reset stack (I2)
 			commands->emit("COPYI I2 I1");
@@ -136,15 +136,15 @@ RETURN: tk_return EXP ';'
 			commands->emit("RETRN");
 		}    ;
         
-WRITE:  tk_write tk_lp EXP tk_rp ';' 
+WRITE:  tk_write tk_lp EXP tk_rp ';'
 		{
 			string op_type = ($3.type == INT) ? "I" : "F";
 			commands->emit("PRNT" + op_type + " " + op_type + $3.regnum);
 		}	|
 
-        tk_write tk_lp str tk_rp ';'    			            
+        tk_write tk_lp str tk_rp ';'
 		{
-			char* str = $3.value; 
+			char* str = $3.value;
 			while(str){
 				if(*str == "\\"){ // the first \ is for escaped..
 					str++;
@@ -166,7 +166,7 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
 			}
 		}	;
         
-READ:   tk_read tk_lp LVAL tk_rp ';'    			            
+READ:   tk_read tk_lp LVAL tk_rp ';'
 		{
 			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
 			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
@@ -174,7 +174,7 @@ READ:   tk_read tk_lp LVAL tk_rp ';'
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
 				emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
-			} else{ // offset <= 0 
+			} else{ // offset <= 0
 				emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
 			string op_type = ($3.type == INT) ? "I" : "F";
@@ -182,7 +182,7 @@ READ:   tk_read tk_lp LVAL tk_rp ';'
 			commands->emit("STOR" + op_type + " " + op_type + $$.regnum + " " + op_type + addr_reg_i + " 0");
 		}	|
         
-ASSN:   LVAL tk_assign EXP ';'      				            
+ASSN:   LVAL tk_assign EXP ';'
 	{
 		current_sym_tbl->add_symbol(yylineno, $1.value, offset+=4, $3.type);
     };
@@ -223,7 +223,7 @@ BEXP:   BEXP tk_or M BEXP     					                {
 																$$.falselist = $2.truelist ; 
                                                                 }  |
 
-    	EXP relop EXP       					                
+    	EXP relop EXP
 		{
 			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands..
 			if($1.type != $3.type){
@@ -240,29 +240,29 @@ BEXP:   BEXP tk_or M BEXP     					                {
 					break;
 				case "<>":
 					commands->emit("SNEQ" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
-					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");	
+					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case "<":
 					commands->emit("SLET" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
-					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");	
+					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case ">":
 					commands->emit("SGRT" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
-					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");	
+					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case "<=":
 					commands->emit("SGRT" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
-					commands->emit("BREQZ " + op_type + to_string(regnum) + " ");	
+					commands->emit("BREQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case ">=":
 					commands->emit("SLET" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
-					commands->emit("BREQZ " + op_type + to_string(regnum) + " ");	
+					commands->emit("BREQZ " + op_type + to_string(regnum) + " ");
 					break;
-					
+
 			}
 			$$.falselist = commands->makelist(commands->nextquad());
 			commands->emit("goto ");
-												
+
 		}  |
 
     	tk_lp BEXP tk_rp        				                {
@@ -380,7 +380,7 @@ EXP:    EXP addop EXP
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
 				emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
-			} else{ // offset <= 0 
+			} else{ // offset <= 0
 				emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
 			if ($$.type == FLOAT){ // float - casting is needed
@@ -390,11 +390,11 @@ EXP:    EXP addop EXP
 			} else{ // integer - no casting is needed
 				emit("LOADI I" + to_string($$.regnum) + " I" + to_string(addr_reg_i) + " 0");
 			}
-			
+
 		}	|
 
-        NUM             					                    
-		{ 
+        NUM
+		{
 			$$.type = $1.type;
 			$$.value = $1.value;
 			$$.regnum = RegisterIdx[$$.type]++;
@@ -412,7 +412,7 @@ EXP:    EXP addop EXP
 				emit("CITOF F" + to_string(addr_reg_f) + " I1"); // assuming the function output is at I1 + 0
 				emit("LOADF F" + to_string($$.regnum) + " F" + to_string(addr_reg_f) + " 0");
 			} else{ // integer - no casting is needed
-				emit("LOADI I" + to_string($$.regnum) + "  " + "0");
+				emit("LOADI I" + to_string($$.regnum) + " I1 " + "0");
 			}
 		}    ;
 
@@ -426,11 +426,36 @@ NUM:    integernum
         realnum    						                        
 		{ 
 			$$.type = FLOAT;
-			$$.value = $1.value;		
+			$$.value = $1.value;
 		}  ;
         
 CALL: id tk_lp CALL_ARGS tk_rp ACTIVATE_SCOPES  		        {
-                                                                if(function_table.add_scopes($2.value,scopes_api);.)//FIXME continue call implemention
+                                                                vector<int>* cur_scopes = function_table.add_call($2.value,scopes_api);
+                                                                return_val_offset = 0;
+                                                                //All register are calle safe
+                                                                for(int i = 0; i<RegisterIdx[INT];++i){}
+                                                                    commands->emit("STORI " + "I" + to_string(i*4) + "I2 " + to_string(i*4));
+                                                                    return_val_offset +=4;
+                                                                }
+                                                                commands->emit("ADD2I I2 I2 " + to_string(i*4));
+                                                                loda
+                                                                for(i = 0; i<RegisterIdx[FLOAT];++i){
+                                                                    commands->emit("STORF " + "F" + to_string(i) + "F" + + " " + to_string(i*4) );
+                                                                    return_val_offset +=4;
+                                                                }
+                                                                for(vector<int>::reverse_iterator it = cur_scopes->rbegin(); it != cur_scopes->rend(); ++it){
+
+                                                                }
+                                                                reg_idx_stack->push(RegisterIdx);
+                                                                RegisterIdx[INT] = INIT_REG_INT;
+                                                                RegisterIdx[FLOAT] = INIT_REG_FLOAT;
+                                                                for(command->emit("JLINK " + )
+                                                                for(int i = 0; i<RegisterIdx[INT];++i){
+
+                                                                }
+                                                                for(int i = 0; i<RegisterIdx[INT];++i){
+
+                                                                }
                                                                 }    ;
 
 ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp  { $$ = makeNode("ACTIVATE_SCOPES",NULL, $1);
