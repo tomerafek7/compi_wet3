@@ -175,6 +175,39 @@ Type SymbolTable::get_symbol_type(int call_line, string &name){
 
 }
 
+/**************************************************************************/
+/*                           Main of parser                               */
+/**************************************************************************/
+extern int yyparse (void);
+
+int main(int argc, char** argv){
+    int rc;
+    char* filename = argv[0];
+    ofstream file;
+    file.open(filename);
+    if(!file.is_open()) {
+        cerr << "Operational error: cannot open input file" << endl;
+        exit(Operational);
+    }
+
+#if YYDEBUG
+    yydebug=1;
+#endif
+
+    rc = yyparse();
+    assert (rc == 0);  // Parsed successfully
+    // print header:
+    file << "<header>" << endl;
+    file << "<unimplemented>" << endl;
+    file << "<implemented>" << endl;
+    file << "</header>" << endl;
+    for(auto it = commands->command_list.begin(); it != commands->command_list.end(); ++it){
+        file << *it << endl;
+    }
+    file.close();
+    return rc;
+}
+
 
 
 

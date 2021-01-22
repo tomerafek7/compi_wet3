@@ -9,6 +9,7 @@
 #include <map>
 #include <stack>
 #include <iostream>
+#include <fstream>
 #include <assert.h>
 #include <algorithm>
 
@@ -28,7 +29,8 @@ typedef enum
 {
     Lexical = 1,
     Syntax = 2,
-    Semantic = 3
+    Semantic = 3,
+    Operational = 9
 } ERROR;
 
 typedef struct line {
@@ -157,6 +159,10 @@ public:
     void add_call(string &name, int call_line, vector<Symbol> & api, vector<int> & scopes);
 
     int get_dec_line(string& name);
+
+    vector<Function> get_all_implemented();
+    vector<Function> get_all_unimplemented();
+
 };
 
 
