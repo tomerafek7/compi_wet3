@@ -1,6 +1,6 @@
 %{
     #include "part3.hpp"
-    #include <stdio->h>
+    #include <stdio.h>
     using namespace std;
     
     extern char *yytext;
@@ -226,9 +226,9 @@ READ:   tk_read tk_lp LVAL tk_rp ';'
 			$$->regnum = RegisterIdx[$$->type]++;
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
-				emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
+				commands->emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
 			} else{ // offset <= 0
-				emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
+				commands->emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
 			string op_type = ($3->type == INT) ? "I" : "F";
 			commands->emit("READ" + op_type + " " + op_type + to_string($$->regnum));
@@ -428,7 +428,7 @@ EXP:    EXP addop EXP
 			$$->type = ($2->type == "int") ? INT : FLOAT;
 			$$->regnum = RegisterIdx[$$->type]++;
 			string op_type = ($$->type == INT) ? "I" : "F";
-			emit("COPY" + op_type + " " + op_type + to_string($$->regnum) + " " + op_type + to_string($4->regnum));
+			commands->emit("COPY" + op_type + " " + op_type + to_string($$->regnum) + " " + op_type + to_string($4->regnum));
 		}  |
 
         id              					                    
@@ -438,16 +438,16 @@ EXP:    EXP addop EXP
 			$$->regnum = RegisterIdx[$$->type]++;
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
-				emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
+				commands->emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
 			} else{ // offset <= 0
-				emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
+				commands->emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
 			if ($$->type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
-				emit("CITOF F" + to_string(addr_reg_f) + " I" + to_string(addr_reg_i));
-				emit("LOADF F" + to_string($$->regnum) + " F" + to_string(addr_reg_f) + " 0");
+				commands->emit("CITOF F" + to_string(addr_reg_f) + " I" + to_string(addr_reg_i));
+				commands->emit("LOADF F" + to_string($$->regnum) + " F" + to_string(addr_reg_f) + " 0");
 			} else{ // integer - no casting is needed
-				emit("LOADI I" + to_string($$->regnum) + " I" + to_string(addr_reg_i) + " 0");
+				commands->emit("LOADI I" + to_string($$->regnum) + " I" + to_string(addr_reg_i) + " 0");
 			}
 
 		}	|
@@ -458,7 +458,7 @@ EXP:    EXP addop EXP
 			$$->value = $1->value;
 			$$->regnum = RegisterIdx[$$->type]++;
 			string op_type = ($$->type == INT) ? "I" : "F";
-			emit("COPY" + op_type + " " + op_type + to_string($$->regnum) + " " + to_string($$->value));
+			commands->emit("COPY" + op_type + " " + op_type + to_string($$->regnum) + " " + to_string($$->value));
 		}    |
 
         CALL
@@ -468,10 +468,10 @@ EXP:    EXP addop EXP
 			$$->regnum = RegisterIdx[$$->type]++;
 			if ($$->type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
-				emit("CITOF F" + to_string(addr_reg_f) + " I1"); // assuming the function output is at I1 + 0
-				emit("LOADF F" + to_string($$->regnum) + " F" + to_string(addr_reg_f) + " 0");
+				commands->emit("CITOF F" + to_string(addr_reg_f) + " I1"); // assuming the function output is at I1 + 0
+				commands->emit("LOADF F" + to_string($$->regnum) + " F" + to_string(addr_reg_f) + " 0");
 			} else{ // integer - no casting is needed
-				emit("LOADI I" + to_string($$->regnum) + " I1 " + "0");
+				commands->emit("LOADI I" + to_string($$->regnum) + " I1 " + "0");
 			}
 		}    ;
 
@@ -576,7 +576,7 @@ CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
 
 N:
                 {
-                    $$->nextlist = commands->makelist(commands->nextquad()) ; emit("UJUMP ")
+                    $$->nextlist = commands->makelist(commands->nextquad()) ; commands->emit("UJUMP ")
                 };
 
 M:
