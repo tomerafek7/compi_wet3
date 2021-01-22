@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-#include "part2.h"
+#include "part3.hpp"
 #include "part2.tab.hpp"
 #include "part2_helpers.h"
 
@@ -71,33 +71,33 @@ scopes          assign_type("scopes");  return tk_scopes;
 %%
 
 void assign_value(const char* type){
-    yylval = makeNode(type, yytext, NULL);
+    yylval = makeLine(type, yytext);
 }
 
 void assign_type(const char* type){
-    yylval = makeNode(type, NULL, NULL);
+    yylval = makeLine(type, NULL;
 }
 
 void assign_value_str(){
     const char* type = "str";
     char* value = yytext + 1;
     value[yyleng-2] = '\0';
-    yylval = makeNode(type, value, NULL);
+    yylval = makeLine(type, value);
 }
 
-void print_lex(char* type){
-    printf("<%s,%s>",type,yytext);
-}
-
-void print_lex_str(){
-    int idx = 1;
-    printf("<str,");
-    while(yytext[idx+1]){
-        printf("%c",yytext[idx]);
-        idx++;
-    }
-    printf(">");
-}
+//void print_lex(char* type){
+//    printf("<%s,%s>",type,yytext);
+//}
+//
+//void print_lex_str(){
+//    int idx = 1;
+//    printf("<str,");
+//    while(yytext[idx+1]){
+//        printf("%c",yytext[idx]);
+//        idx++;
+//    }
+//    printf(">");
+//}
 
 void print_error(){
     printf("Lexical error: '%s' in line number %d\n",yytext,yylineno);

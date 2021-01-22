@@ -38,30 +38,32 @@ int quad; // command number
 string type; // Syntax variable or token type for tokens
 string value; // Token value. NULL for syntax variables
 int regnum;
-vector<string> code;
-vector<int> truelist;
-vector<int> falselist;
-vector<int> nextlist;
+vector<int>* truelist;
+vector<int>* falselist;
+vector<int>* nextlist;
 
 } Line;
 
-ParserNode *makeNode(const char* type,const char* value, ParserNode *child)
-{
-    ParserNode *p;
+Line* makeLine(const char *type, const char *value) {
 
-    if ((p = (ParserNode*)(malloc(sizeof(ParserNode)))) == 0)
+    Line *p;
+
+    if ((p = (Line *) (malloc(sizeof(Line)))) == 0)
         fprintf(stderr, "Failed malloc(struct node)\n");
     else {
         p->type = strdup(type);
-        if (value != NULL) {
+        if (value != nullptr) {
             p->value = strdup(value);
         } else {
-            p->value = NULL;
+            p->value = string();
         }
-        p->child = child;
-        p->sibling = (ParserNode*)NULL;
     }
-    return(p);
+    p->regnum = 0;
+    p->quad = 0;
+    p->truelist = new vector<int>();
+    p->falselist = new vector<int>();
+    p->nextlist = new vector<int>();
+    return (p);
 }
 
 
@@ -122,7 +124,8 @@ public:
 class Function{
 
 public:
-    Function(int dec_line, Type return_type, vector<Symbol> & api, vector<int> & scopes);
+    Function(int dec_line, Type return_type, vector<Symbol> & api, vector<int> & scopes, string name);
+    Function(Function *f);
     // dec_line = -1 if this is only a declaration.
 //    Function(int dec_line, Type return_type);
 //    void insertApi(vector<Type> & api);
@@ -132,7 +135,7 @@ public:
     Type return_type;
     vector<Symbol>* api;
     vector<int>* scopes;
-
+    string name;
     void add_call(int line);
 
 };
@@ -160,8 +163,9 @@ public:
 
     int get_dec_line(string& name);
 
-    vector<Function> get_all_implemented();
-    vector<Function> get_all_unimplemented();
+    vector<Function>* get_all_implemented();
+
+    vector<Function>* get_all_unimplemented();
 
 };
 
