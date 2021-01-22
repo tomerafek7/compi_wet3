@@ -35,9 +35,9 @@ typedef enum
 
 typedef struct line {
 int quad; // command number
-string type; // Syntax variable or token type for tokens
+Type type; // Syntax variable or token type for tokens
 string value; // Token value. NULL for syntax variables
-int regnum;
+int reg;
 vector<int>* truelist;
 vector<int>* falselist;
 vector<int>* nextlist;
@@ -51,14 +51,14 @@ Line* makeLine(const char *type, const char *value) {
     if ((p = (Line *) (malloc(sizeof(Line)))) == 0)
         fprintf(stderr, "Failed malloc(struct node)\n");
     else {
-        p->type = strdup(type);
+        p->type = INT;
         if (value != nullptr) {
             p->value = strdup(value);
         } else {
             p->value = string();
         }
     }
-    p->regnum = 0;
+    p->reg = 0;
     p->quad = 0;
     p->truelist = new vector<int>();
     p->falselist = new vector<int>();
