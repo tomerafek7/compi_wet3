@@ -512,7 +512,7 @@ CALL:   id tk_lp
             }
             commands->emit("COPYI I3 0");
             commands->emit("COPYI I4 1");
-            vector<int>* func_scopes = function_table->get_scopes($1->value);
+            vector<int>* func_scopes = function_table->get_scope($1->value);
             for(vector<int>::reverse_iterator it = func_scopes->rbegin(); it != func_scopes->rend(); ++it){
                 if(find(called_scopes->begin(), called_scopes->end(), *it) != func_scopes->rend()){
                     return_val_offset += 4;
@@ -522,12 +522,12 @@ CALL:   id tk_lp
                     commands->emit("STORI I3 I2 "+ to_string(return_val_offset));
                 }
             }
-            for(vector<Symbol>::reverse_iterator it = called_args->rbegin(), iter = func_api->rbegin()); it != called_args->rend(); ++it){
+            for(vector<Symbol>::reverse_iterator it = called_args->rbegin(); it != called_args->rend(); ++it){
                 return_val_offset += 4;
                 if(*it->type == FLOAT){
-                    commands->emit("STORF F" + to_string(*it->reg) + "F2 " + to_string(return_val_offset));
+                    commands->emit("STORF F" + to_string(it->reg) + "F2 " + to_string(return_val_offset));
                 } else {
-                    commands->emit("STORI I" + to_string(*it->reg) + "I2 " + to_string(return_val_offset));
+                    commands->emit("STORI I" + to_string(it->reg) + "I2 " + to_string(return_val_offset));
                 }
             }
             return_val_offset += 4;
@@ -554,11 +554,11 @@ ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
 
 SCOPES_LIST:    SCOPES_LIST tk_comma integernum
                 {
-                    called_scopes->push_back($3->value);
+                    called_scopes->push_back(stoi($3->value));
                 }    |
                 integernum
                 {
-                    called_scopes->push_back($1->value);
+                    called_scopes->push_back(stoi($1->value));
                 }    ;
 
 CALL_ARGS:  CALL_ARGLIST
