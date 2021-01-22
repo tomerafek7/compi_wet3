@@ -231,8 +231,8 @@ READ:   tk_read tk_lp LVAL tk_rp ';'
 				emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
 			string op_type = ($3->type == INT) ? "I" : "F";
-			commands->emit("READ" + op_type + " " + op_type + to_string($$.regnum));
-			commands->emit("STOR" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(addr_reg_i) + " 0");
+			commands->emit("READ" + op_type + " " + op_type + to_string($$->regnum));
+			commands->emit("STOR" + op_type + " " + op_type + to_string($$->regnum) + " " + op_type + to_string(addr_reg_i) + " 0");
 		}	|
         
 ASSN:   LVAL tk_assign EXP ';'
@@ -243,7 +243,7 @@ ASSN:   LVAL tk_assign EXP ';'
 		}
 		int offset = current_sym_tbl->get_symbol_offset(yylineno, $1->value);
 		string op_type = (type == INT) ? "I" : "F";
-		commands->emit("STOR" + op_type + " " + op_type + to_string($3.regnum) + " I2 " + to_string(offset);
+		commands->emit("STOR" + op_type + " " + op_type + to_string($3->regnum) + " I2 " + to_string(offset);
     };
         
 LVAL:   id                                                  	{ $$->value = $1->value; };
@@ -294,27 +294,27 @@ BEXP:   BEXP tk_or M BEXP     					                {
 			int regnum = RegisterIdx[type]++;
 			switch($2->value){
 				case "==":
-					commands->emit("SEQU" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("SEQU" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1->regnum + " " + op_type + $3->regnum);
 					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case "<>":
-					commands->emit("SNEQ" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("SNEQ" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1->regnum + " " + op_type + $3->regnum);
 					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case "<":
-					commands->emit("SLET" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("SLET" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1->regnum + " " + op_type + $3->regnum);
 					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case ">":
-					commands->emit("SGRT" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("SGRT" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1->regnum + " " + op_type + $3->regnum);
 					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case "<=":
-					commands->emit("SGRT" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("SGRT" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1->regnum + " " + op_type + $3->regnum);
 					commands->emit("BREQZ " + op_type + to_string(regnum) + " ");
 					break;
 				case ">=":
-					commands->emit("SLET" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("SLET" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1->regnum + " " + op_type + $3->regnum);
 					commands->emit("BREQZ " + op_type + to_string(regnum) + " ");
 					break;
 
@@ -335,30 +335,30 @@ EXP:    EXP addop EXP
 			// both are integers:
 			if($1->type == INT && $3->type == INT){
 				$$->type = INT;
-				reg1 = $1.regnum;
-				reg2 = $3.regnum;
+				reg1 = $1->regnum;
+				reg2 = $3->regnum;
 				// no casting is needed
 			// both are floats:
 			} else if($1->type == FLOAT && $3->type == FLOAT){
 				$$->type = FLOAT;
-				reg1 = $1.regnum;
-				reg2 = $3.regnum;
+				reg1 = $1->regnum;
+				reg2 = $3->regnum;
 				// no casting is needed
 			} else{ // one is integer and the other is float
 				$$->type = FLOAT;
 				if($1->type == INT){ // first is integer
 					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($1.regnum) + "F" + to_string(reg1));
-					reg2 = $3.regnum;
+					commands->emit("CITOF " + "I" + to_string($1->regnum) + "F" + to_string(reg1));
+					reg2 = $3->regnum;
 				} else{ // second is integer
 					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($3.regnum) + "F" + to_string(reg2));
-					reg1 = $1.regnum;
+					commands->emit("CITOF " + "I" + to_string($3->regnum) + "F" + to_string(reg2));
+					reg1 = $1->regnum;
 				}
 			}
 			
 			// allocate register for parent
-			$$.regnum = RegisterIdx[$$->type]++;
+			$$->regnum = RegisterIdx[$$->type]++;
 			// different operation kind based on type:
 			string op_type;
 			if($$->type == INT){
@@ -368,9 +368,9 @@ EXP:    EXP addop EXP
 			}
 			
 			if($2->value == "+"){ // addition
-				commands->emit("ADD2" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+				commands->emit("ADD2" + op_type + " " + op_type + to_string($$->regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
 			} else{ // subtraction
-				commands->emit("SUBT" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+				commands->emit("SUBT" + op_type + " " + op_type + to_string($$->regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
 			}
 				
 		}	|
@@ -381,37 +381,37 @@ EXP:    EXP addop EXP
 			// both are integers:
 			if($1->type == INT && $3->type == INT){
 				$$->type = INT;
-				reg1 = $1.regnum;
-				reg2 = $3.regnum;
+				reg1 = $1->regnum;
+				reg2 = $3->regnum;
 				// no casting is needed
 			// both are floats:
 			} else if($1->type == FLOAT && $3->type == FLOAT){
 				$$->type = FLOAT;
-				reg1 = $1.regnum;
-				reg2 = $3.regnum;
+				reg1 = $1->regnum;
+				reg2 = $3->regnum;
 				// no casting is needed
 			} else{ // one is integer and the other is float
 				$$->type = FLOAT;
 				if($1->type == INT){ // first is integer
 					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($1.regnum) + "F" + to_string(reg1));
-					reg2 = $3.regnum;
+					commands->emit("CITOF " + "I" + to_string($1->regnum) + "F" + to_string(reg1));
+					reg2 = $3->regnum;
 				} else{ // second is integer
 					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($3.regnum) + "F" + to_string(reg2));
-					reg1 = $1.regnum;
+					commands->emit("CITOF " + "I" + to_string($3->regnum) + "F" + to_string(reg2));
+					reg1 = $1->regnum;
 				}
 			}
 			
 			// allocate register for parent
-			$$.regnum = RegisterIdx[$$->type]++;
+			$$->regnum = RegisterIdx[$$->type]++;
 			// different operation kind based on type:
 			string op_type = ($$->type == INT) ? "I" : "F";
 			
 			if($2->value == "*"){ // multiplication
-				commands->emit("MULT" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+				commands->emit("MULT" + op_type + " " + op_type + to_string($$->regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
 			} else{ // division
-				commands->emit("DIVD" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+				commands->emit("DIVD" + op_type + " " + op_type + to_string($$->regnum) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
 			}
 	
 		}  |
@@ -419,23 +419,23 @@ EXP:    EXP addop EXP
         tk_lp EXP tk_rp         				                
 		{
 			$$->type = $2->type;
-			$$.regnum = $2.regnum;
+			$$->regnum = $2->regnum;
 			
         }  |
 
         tk_lp TYPE tk_rp EXP    				                
 		{
 			$$->type = ($2->type == "int") ? INT : FLOAT;
-			$$.regnum = RegisterIdx[$$->type]++;
+			$$->regnum = RegisterIdx[$$->type]++;
 			string op_type = ($$->type == INT) ? "I" : "F";
-			emit("COPY" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string($4.regnum));
+			emit("COPY" + op_type + " " + op_type + to_string($$->regnum) + " " + op_type + to_string($4->regnum));
 		}  |
 
         id              					                    
 		{ 
 			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1->value);
 			$$->type = current_sym_tbl->get_symbol_type(yylineno, $1->value);
-			$$.regnum = RegisterIdx[$$->type]++;
+			$$->regnum = RegisterIdx[$$->type]++;
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
 				emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
@@ -445,9 +445,9 @@ EXP:    EXP addop EXP
 			if ($$->type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
 				emit("CITOF F" + to_string(addr_reg_f) + " I" + to_string(addr_reg_i));
-				emit("LOADF F" + to_string($$.regnum) + " F" + to_string(addr_reg_f) + " 0");
+				emit("LOADF F" + to_string($$->regnum) + " F" + to_string(addr_reg_f) + " 0");
 			} else{ // integer - no casting is needed
-				emit("LOADI I" + to_string($$.regnum) + " I" + to_string(addr_reg_i) + " 0");
+				emit("LOADI I" + to_string($$->regnum) + " I" + to_string(addr_reg_i) + " 0");
 			}
 
 		}	|
@@ -456,22 +456,22 @@ EXP:    EXP addop EXP
 		{
 			$$->type = $1->type;
 			$$->value = $1->value;
-			$$.regnum = RegisterIdx[$$->type]++;
+			$$->regnum = RegisterIdx[$$->type]++;
 			string op_type = ($$->type == INT) ? "I" : "F";
-			emit("COPY" + op_type + " " + op_type + to_string($$.regnum) + " " + to_string($$->value));
+			emit("COPY" + op_type + " " + op_type + to_string($$->regnum) + " " + to_string($$->value));
 		}    |
 
         CALL
 		{
 			// FIXME: change to I2 + offset
 			$$->type = $1->type;
-			$$.regnum = RegisterIdx[$$->type]++;
+			$$->regnum = RegisterIdx[$$->type]++;
 			if ($$->type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
 				emit("CITOF F" + to_string(addr_reg_f) + " I1"); // assuming the function output is at I1 + 0
-				emit("LOADF F" + to_string($$.regnum) + " F" + to_string(addr_reg_f) + " 0");
+				emit("LOADF F" + to_string($$->regnum) + " F" + to_string(addr_reg_f) + " 0");
 			} else{ // integer - no casting is needed
-				emit("LOADI I" + to_string($$.regnum) + " I1 " + "0");
+				emit("LOADI I" + to_string($$->regnum) + " I1 " + "0");
 			}
 		}    ;
 
@@ -525,9 +525,9 @@ CALL:   id tk_lp
             for(vector<Symbol>::reverse_iterator it = called_args->rbegin(), iter = func_api->rbegin()); it != called_args->rend(); ++it){
                 return_val_offset += 4;
                 if(*it->type == FLOAT){
-                    commands->emit("STORF F" + to_string(*it.regnum) + "F2 " + to_string(return_val_offset));
+                    commands->emit("STORF F" + to_string(*it->regnum) + "F2 " + to_string(return_val_offset));
                 } else {
-                    commands->emit("STORI I" + to_string(*it.regnum) + "I2 " + to_string(return_val_offset));
+                    commands->emit("STORI I" + to_string(*it->regnum) + "I2 " + to_string(return_val_offset));
                 }
             }
             return_val_offset += 4;
@@ -567,11 +567,11 @@ CALL_ARGS:  CALL_ARGLIST
             
 CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
                 {
-                    called_args->push_back(Symbol($3->type, $3.regnum));
+                    called_args->push_back(Symbol($3->type, $3->regnum));
                 }    |
                 EXP
                 {
-                    called_args->push_back(Symbol($1->type, $1.regnum));
+                    called_args->push_back(Symbol($1->type, $1->regnum));
                 };
 
 N:
