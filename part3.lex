@@ -1,8 +1,8 @@
 %{
 #include <stdio.h>
 #include "part3.hpp"
-#include "part2.tab.hpp"
-#include "part2_helpers.h"
+#include "part3.tab.hpp"
+
 
 void print_lex(char* type);
 void print_lex_str();
@@ -11,7 +11,7 @@ void assign_value(const char* type);
 void assign_type(const char* type);
 void assign_value_str();
 
-extern ParserNode* yylval;
+extern Line* yylval;
 %}
 
 %option noyywrap
