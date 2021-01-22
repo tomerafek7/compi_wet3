@@ -286,7 +286,7 @@ BEXP:   BEXP tk_or M BEXP     					                {
 		{
 			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands..
 			if($1.type != $3.type){
-				commands->SemanticError(yylineno,"Cannot Compare Expressions with different types");
+				SemanticError(yylineno,"Cannot Compare Expressions with different types");
 			}
 			// assuming SemanticError is exiting the program.
 			Type type = $1.type; // they both have the same type
@@ -362,9 +362,9 @@ EXP:    EXP addop EXP
 			// different operation kind based on type:
 			string op_type;
 			if($$.type == INT){
-				op_type = "I"
+				op_type = "I";
 			} else{
-				op_type = "F"
+				op_type = "F";
 			}
 			
 			if($2.value == "+"){ // addition
@@ -536,7 +536,7 @@ CALL:   id tk_lp
             $$.value = return_val_offset;
             int func_line = commands->nextquad()
             function_table.add_call($1.value,func_line,arg_list,called_scope);
-            command->emit("JLINK " + to_string(func_line));
+            commands->emit("JLINK " + to_string(func_line));
             return_val_offset -= arg_list.size() + func_scopes.size() + 4;
             for(int i = 0; i<RegisterIdx[INT];++i){
                 commands->emit("STORF F" + to_string(i) + "F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
