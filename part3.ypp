@@ -76,7 +76,7 @@ BLK: 	'{' STLIST '}'                 				            { $$ = makeNode("BLK",NULL,
                                                                 concatList($1, $2);
                                     				            concatList($1, $3);}    ;
 
-DCL:    id ':' TYPE                 				            { current_sym_tbl(yylineno, $1.name, offset, $3.type);
+DCL:    id ':' TYPE                 				            { current_sym_tbl->add_symbol(yylineno, $1.name, offset, $3.type);
                                                                 $$.type = $3.type;
                                                                 offset-=4;
                                                                 }    |
@@ -111,42 +111,83 @@ STMT:   DCL ';'     						                    {
                                                                 concatList($1, $4);
                                                                 concatList($1, $5);};
         
-RETURN: tk_return EXP ';'   					                {
-                                                                $$ = makeNode("RETURN",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3); }    |
-        tk_return ';'       					                {
-                                                                $$ = makeNode("RETURN",NULL, $1);
-                                                                concatList($1, $2); }    ;
+RETURN: tk_return EXP ';'   					                
+		{
+			string op_type = ($3.type == INT) ? "I" : "F";
+			commands->emit("STOR" + op_type + + " " + 
+			int addr_reg_i = RegisterIdx[FLOAT]++;
+			if ($3.type == FLOAT){ // float - casting is needed
+				int addr_reg_f = RegisterIdx[FLOAT]++;
+				commands->emit("CITOF F" + to_string(addr_reg_f) + " I1"); // cast I1 to a float register
+				commands->emit("STORF F" + to_string($3.regnum) + " F" + to_string(addr_reg_f) + " 0"); // writing the value to address stored in I1.
+			} else{ // integer - no casting is needed
+				commands->emit("STORI I" + to_string($3.regnum) + " I1 " + "0"); // writing the value to address stored in I1.
+			}
+			// at last, reset stack (I2)  + return command
+			commands->emit("COPYI I2 I1");
+			commands->emit("RETRN");
+		}	|
+		
+        tk_return ';'       					                
+		{
+			// reset stack (I2)
+			commands->emit("COPYI I2 I1");
+			// return command
+			commands->emit("RETRN");
+		}    ;
         
-WRITE:  tk_write tk_lp EXP tk_rp ';'    			            {
-                                                                $$ = makeNode("WRITE",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);
-                                                                concatList($1, $4);
-                                                                concatList($1, $5); }    |
+WRITE:  tk_write tk_lp EXP tk_rp ';' 
+		{
+			string op_type = ($3.type == INT) ? "I" : "F";
+			commands->emit("PRNT" + op_type + " " + op_type + $3.regnum);
+		}	|
 
-        tk_write tk_lp str tk_rp ';'    			            {
-                                                                $$ = makeNode("WRITE",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);
-                                                                concatList($1, $4);
-                                                                concatList($1, $5); }    ;
+        tk_write tk_lp str tk_rp ';'    			            
+		{
+			char* str = $3.value; 
+			while(str){
+				if(*str == "\\"){ // the first \ is for escaped..
+					str++;
+					switch(*str){
+						case "n":
+							commands->emit("PRNTC 10"); // 10 is LF in ascii
+							break;
+						case "t":
+							commands->emit("PRNTC 9"); // 9 is TAB in ascii
+							break;
+						case '"':
+							commands->emit("PRNTC 34"); // 34 is " in ascii
+							break;
+					}
+				} else{
+					commands->emit("PRNTC " + *str);
+				}
+					str++;
+			}
+		}	;
         
-READ:   tk_read tk_lp LVAL tk_rp ';'    			            {
-                                                                $$ = makeNode("READ",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);
-                                                                concatList($1, $4);
-                                                                concatList($1, $5); }    ;
+READ:   tk_read tk_lp LVAL tk_rp ';'    			            
+		{
+			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
+			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
+			$$.regnum = RegisterIdx[$$.type]++;
+			int addr_reg_i = RegisterIdx[INT]++;
+			if (offset > 0){
+				emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
+			} else{ // offset <= 0 
+				emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
+			}
+			string op_type = ($3.type == INT) ? "I" : "F";
+			commands->emit("READ" + op_type + " " + op_type + $$.regnum);
+			commands->emit("STOR" + op_type + " " + op_type + $$.regnum + " " + op_type + addr_reg_i + " 0");
+		}	|
         
-ASSN:   LVAL tk_assign EXP ';'      				            {
-                                                                $$ = makeNode("ASSN",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3);
-                                                                concatList($1, $4); }    ;
+ASSN:   LVAL tk_assign EXP ';'      				            
+	{
+		current_sym_tbl->add_symbol(yylineno, $1.value, offset+=4, $3.type);
+    };
         
-LVAL:   id                                                  	{ $$ = makeNode("LVAL",NULL, $1); }   ;
+LVAL:   id                                                  	{ $$.value = $1.value; };
 	
 CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
                                                             	commands->backpatch($2.truelist , $4.quad) ;
@@ -161,9 +202,10 @@ CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
                                                                                                         
         tk_while M BEXP tk_do M STMT                        	{
                                                             	commands->backpatch($6.nextlist, $2.quad) ;
-                                                            	commands->backpatch($3.truelist , $5.quad) } ;
+                                                            	commands->backpatch($3.truelist , $5.quad);
                                                             	$$.nextlist = $3.falselist ;
-                                                            	commands->emit ( 'UJUMP ' + $2.quad); };
+                                                            	commands->emit('UJUMP ' + $2.quad);
+																};
 
 BEXP:   BEXP tk_or M BEXP     					                {
 																commands->backpatch($1.falselist, $3.quad);
@@ -181,10 +223,47 @@ BEXP:   BEXP tk_or M BEXP     					                {
 																$$.falselist = $2.truelist ; 
                                                                 }  |
 
-    	EXP relop EXP       					                {
-                                                                $$.truelist = commands->makelist(commands->nextquad());
-																TODO: complete
-																}  |
+    	EXP relop EXP       					                
+		{
+			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands..
+			if($1.type != $3.type){
+				commands->SemanticError(yylineno,"Cannot Compare Expressions with different types");
+			}
+			// assuming SemanticError is exiting the program.
+			Type type = $1.type; // they both have the same type
+			string op_type = (type == INT) ? "I" : "F";
+			int regnum = RegisterIdx[type]++;
+			switch($2.value){
+				case "==":
+					commands->emit("SEQU" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");
+					break;
+				case "<>":
+					commands->emit("SNEQ" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");	
+					break;
+				case "<":
+					commands->emit("SLET" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");	
+					break;
+				case ">":
+					commands->emit("SGRT" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("BNEQZ " + op_type + to_string(regnum) + " ");	
+					break;
+				case "<=":
+					commands->emit("SGRT" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("BREQZ " + op_type + to_string(regnum) + " ");	
+					break;
+				case ">=":
+					commands->emit("SLET" + op_type + " " + op_type + to_string(regnum) + " " + op_type + $1.regnum + " " + op_type + $3.regnum);
+					commands->emit("BREQZ " + op_type + to_string(regnum) + " ");	
+					break;
+					
+			}
+			$$.falselist = commands->makelist(commands->nextquad());
+			commands->emit("goto ");
+												
+		}  |
 
     	tk_lp BEXP tk_rp        				                {
                                                                 $$.truelist = $2.truelist ; 
@@ -300,9 +379,9 @@ EXP:    EXP addop EXP
 			$$.regnum = RegisterIdx[$$.type]++;
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
-				emit("ADD2I I" + to_string(addr_reg) + " I1 " + to_string(offset));
+				emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
 			} else{ // offset <= 0 
-				emit("SUBTI I" + to_string(addr_reg) + " I1 " + to_string(-offset));
+				emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
 			if ($$.type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
@@ -325,6 +404,7 @@ EXP:    EXP addop EXP
 
         CALL
 		{
+			// FIXME: change to I2 + offset
 			$$.type = $1.type;
 			$$.regnum = RegisterIdx[$$.type]++;
 			if ($$.type == FLOAT){ // float - casting is needed
@@ -332,7 +412,7 @@ EXP:    EXP addop EXP
 				emit("CITOF F" + to_string(addr_reg_f) + " I1"); // assuming the function output is at I1 + 0
 				emit("LOADF F" + to_string($$.regnum) + " F" + to_string(addr_reg_f) + " 0");
 			} else{ // integer - no casting is needed
-				emit("LOADI I" + to_string($$.regnum) + " I1 " + "0");
+				emit("LOADI I" + to_string($$.regnum) + "  " + "0");
 			}
 		}    ;
 
