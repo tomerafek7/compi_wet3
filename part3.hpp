@@ -168,7 +168,7 @@ extern stack<int>* rtrn_vl_ofst_stk;
 extern vector<int>::iterator scopes_iter;
 
 vector<int>* scopes_api;
-vector<Symbol*>* args_api;
+vector<Symbol>* args_api;
 vector<int>* called_scopes;
 vector<Symbol>* called_args;
 int offset = -4;
