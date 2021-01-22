@@ -116,7 +116,7 @@ DCL:    id ':' TYPE                 				            {
 																
         id tk_comma DCL             				            {
 																current_sym_tbl->add_symbol(yylineno, $1->value, offset, $3->type);
-																$$->type = to_string($3->type);
+																$$->type = $3->type;
 																$$->value = $1->value;
                                     				            }    ;
                                     
@@ -244,7 +244,7 @@ ASSN:   LVAL tk_assign EXP ';'
 		}
 		int offset = current_sym_tbl->get_symbol_offset(yylineno, $1->value);
 		string op_type = (type == INT) ? "I" : "F";
-		commands->emit("STOR" + op_type + " " + op_type + to_string($3->reg) + " I2 " + to_string(offset);
+		commands->emit("STOR" + op_type + " " + op_type + to_string($3->reg) + " I2 " + to_string(offset));
     };
         
 LVAL:   id                                                  	{ $$->value = $1->value; };
@@ -293,33 +293,26 @@ BEXP:   BEXP tk_or M BEXP     					                {
 			Type type = $1->type; // they both have the same type
 			string op_type = (type == INT) ? "I" : "F";
 			int reg = RegisterIdx[type]++;
-			switch($2->value){
-				case "==":
-					commands->emit("SEQU" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
-					commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
-					break;
-				case "<>":
-					commands->emit("SNEQ" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
-					commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
-					break;
-				case "<":
-					commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
-					commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
-					break;
-				case ">":
-					commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
-					commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
-					break;
-				case "<=":
-					commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
-					commands->emit("BREQZ " + op_type + to_string(reg) + " ");
-					break;
-				case ">=":
-					commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
-					commands->emit("BREQZ " + op_type + to_string(reg) + " ");
-					break;
-
+			if($2->value == "=="){
+				commands->emit("SEQU" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
+			} else if($2->value == "<>"){
+				commands->emit("SNEQ" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
+			} else if($2->value == "<"){
+				commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
+			} else if($2->value == ">"){
+				commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
+			} else if($2->value == "<="){
+				commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+				commands->emit("BREQZ " + op_type + to_string(reg) + " ");
+			} else{ // >=
+				commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+				commands->emit("BREQZ " + op_type + to_string(reg) + " ");
 			}
+
 			$$->falselist = commands->makelist(commands->nextquad());
 			commands->emit("UJUMP ");
 
