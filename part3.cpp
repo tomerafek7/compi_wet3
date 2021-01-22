@@ -279,3 +279,24 @@ int main(int argc, char** argv){
 
 
 
+Line* makeLine(const char *type, const char *value){
+
+Line *p;
+
+if ((p = (Line *) (malloc(sizeof(Line)))) == 0)
+fprintf(stderr, "Failed malloc(struct node)\n");
+else {
+p->type = INT;
+if (value != nullptr) {
+p->value = strdup(value);
+} else {
+p->value = string();
+}
+}
+p->reg = 0;
+p->quad = 0;
+p->truelist = new vector<int>();
+p->falselist = new vector<int>();
+p->nextlist = new vector<int>();
+return (p);
+}
