@@ -75,7 +75,7 @@ void assign_value(const char* type){
 }
 
 void assign_type(const char* type){
-    yylval = makeLine(type, NULL;
+    yylval = makeLine(type, NULL);
 }
 
 void assign_value_str(){

@@ -153,7 +153,7 @@ public:
 
 extern Commands *commands;
 
-extern stack<SymbolTable>* symbol_table_stack;
+extern stack<SymbolTable*>* symbol_table_stack;
 
 extern int RegisterIdx[2];
 
