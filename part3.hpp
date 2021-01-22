@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <map>
 #include <stack>
