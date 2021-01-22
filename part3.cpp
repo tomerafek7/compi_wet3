@@ -138,7 +138,6 @@ vector<int>* FunctionTable::add_call(string &name, int call_line, vector<Type> &
     for(vector<int>::iterator it = scopes.begin(); it != scopes.end() ; ++it){
         if(find(called_func_scopes->begin(), called_func_scopes->end(), *it) != called_func_scopes->end()){
             if (!table->count(name)){
-
                 SemanticError(call_line,  "Function scope error" );//FIXME
             }
         }
@@ -147,9 +146,12 @@ vector<int>* FunctionTable::add_call(string &name, int call_line, vector<Type> &
     return (new vector<int>(*curr_func->scopes));
 }
 
-Symbol::Symbol(string &name, int address, Type type):
-name(name), address(address), type(type){}
 
+Symbol::Symbol(int offset, Type type, string &name)  : offset(offset), type(type), name(name){}
+
+Symbol::Symbol(int offset, Type type,  int reg, string &name) : offset(offset), type(type), reg(reg), name(name){}
+
+Symbol::Symbol(Type type, string &name) :  type(type), name(name){}
 
 void SymbolTable::add_symbol(int call_line, string &name, int offset, Type type){
     std::pair<std::map<string,Symbol*>::iterator,bool> res;
