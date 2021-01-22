@@ -50,11 +50,21 @@ vector<int>& Commands::makelist(int value){
     
 
 Function::Function(int dec_line, Type return_type, vector<Symbol> & api,
-                    vector<int> & scopes):dec_line(dec_line), return_type(return_type)
+                    vector<int> & scopes, string name) : dec_line(dec_line), return_type(return_type), name(name)
 {
     this->api = new vector<Symbol>(api);
     this->scopes = new vector<int>(scopes);
     this->calls = new vector<int>();
+}
+
+
+Function::Function(Function *f){
+    this->dec_line=f->dec_line;
+    this->return_type = f->return_type;
+    this->name = f->name;
+    this->api= new vector<Symbol>(*f->api);
+    this->scopes = new vector<int>(*f->scopes);
+    this->calls = new vector<int>(*f->calls);
 }
 
 //Function::Function(int dec_line, Type return_type):
@@ -76,6 +86,8 @@ void Function::add_call(int line) {
     this->calls->push_back(line);
 }
 
+
+
 int FunctionTable::get_dec_line(string& name) {
     return this->table->at(name)->dec_line;
 }
@@ -92,7 +104,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         vector<Symbol> & api, vector<int> & scopes){
     std::pair<std::map<string,Function*>::iterator,bool> res;
     res = table->insert(std::pair<string, Function*>(name,
-                           new Function(dec_line, return_type, api, scopes)));
+                           new Function(dec_line, return_type, api, scopes,name)));
     // if the insert didn't succeeded && this call is for declaration --> ERROR
     if (!res.second && dec_line != -1) { // there's already a function with this name
         // check if this function is only declared / already implemented
@@ -149,6 +161,27 @@ void FunctionTable::add_call(string &name, int call_line, vector<Symbol> & api, 
     }
     curr_func->add_call(call_line);
 }
+
+vector<Function>* FunctionTable::get_all_implemented(){
+    vector<Function>* out = new vector<Function>();
+    for(map<string, Function*>::iterator it = this->table->begin();it != table->end();++it){
+        if(it->second->dec_line!=-1){
+            out->push_back(it->second);
+        }
+    }
+    return out;
+}
+
+vector<Function>* FunctionTable::get_all_unimplemented(){
+    vector<Function>* out = new vector<Function>();
+    for(map<string, Function*>::iterator it = this->table->begin();it != table->end();++it){
+        if(it->second->dec_line==-1){
+            out->push_back(it->second);
+        }
+    }
+    return out;
+}
+
 
 
 Symbol::Symbol(int offset, Type type, string &name)  : offset(offset), type(type), name(name){}
