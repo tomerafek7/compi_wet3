@@ -39,7 +39,7 @@ FDEFS:      FDEFS FUNC_API
 			{
 				// definition - pass dec_line = nextquad
 				function_table->add_function($2->value, commands->nextquad(), $2->type, args_api, scopes_api);
-				symbol_table_stack->push(currnet_sym_tbl);
+				symbol_table_stack->push(current_sym_tbl);
 				current_sym_tbl = new SymbolTable();
 				RegisterIdx[INT] = INIT_REG_INT;
 				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
@@ -98,7 +98,7 @@ FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
 BLK: 	'{'
 		{
 			// pushing the symbol table so the block won't override it.
-			symbol_table_stack->push(currnet_sym_tbl);
+			symbol_table_stack->push(current_sym_tbl);
 			// keeping the symbol table so we could append it inside the block.
 		}
 		STLIST '}'
@@ -349,11 +349,11 @@ EXP:    EXP addop EXP
 				$$->type = FLOAT;
 				if($1->type == INT){ // first is integer
 					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($1->reg) + "F" + to_string(reg1));
+					commands->emit("CITOF I" + to_string($1->reg) + "F" + to_string(reg1));
 					reg2 = $3->reg;
 				} else{ // second is integer
 					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($3->reg) + "F" + to_string(reg2));
+					commands->emit("CITOF I" + to_string($3->reg) + "F" + to_string(reg2));
 					reg1 = $1->reg;
 				}
 			}
@@ -395,11 +395,11 @@ EXP:    EXP addop EXP
 				$$->type = FLOAT;
 				if($1->type == INT){ // first is integer
 					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($1->reg) + "F" + to_string(reg1));
+					commands->emit("CITOF I" + to_string($1->reg) + "F" + to_string(reg1));
 					reg2 = $3->reg;
 				} else{ // second is integer
 					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF " + "I" + to_string($3->reg) + "F" + to_string(reg2));
+					commands->emit("CITOF I" + to_string($3->reg) + "F" + to_string(reg2));
 					reg1 = $1->reg;
 				}
 			}
@@ -426,7 +426,7 @@ EXP:    EXP addop EXP
 
         tk_lp TYPE tk_rp EXP    				                
 		{
-			$$->type = ($2->type == "int") ? INT : FLOAT;
+			$$->type = $2->type;
 			$$->reg = RegisterIdx[$$->type]++;
 			string op_type = ($$->type == INT) ? "I" : "F";
 			commands->emit("COPY" + op_type + " " + op_type + to_string($$->reg) + " " + op_type + to_string($4->reg));
@@ -459,7 +459,7 @@ EXP:    EXP addop EXP
 			$$->value = $1->value;
 			$$->reg = RegisterIdx[$$->type]++;
 			string op_type = ($$->type == INT) ? "I" : "F";
-			commands->emit("COPY" + op_type + " " + op_type + to_string($$->reg) + " " + to_string($$->value));
+			commands->emit("COPY" + op_type + " " + op_type + to_string($$->reg) + " " + $$->value);
 		}    |
 
         CALL
