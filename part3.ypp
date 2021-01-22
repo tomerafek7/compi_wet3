@@ -33,36 +33,41 @@
 //STACK POINTER == I2
 
 
-PROGRAM:    FDEFS   						                    {parseTree = makeNode("PROGRAM",NULL, $1);}  ;
+PROGRAM:    FDEFS   						                    {}  ;
 
-FDEFS:      FDEFS FUNC_API BLK  				                
+FDEFS:      FDEFS FUNC_API   				                
 			{
 				// definition - pass dec_line = nextquad
 				function_table->add_function($2.value,commmands->nextquad(), $2.type, args_api, scopes_api);
-			}   |
+				symbol_table_stack->push(currnet_sym_tbl);
+				current_sym_tbl = new SymbolTable();
+				RegisterIdx[INT] = INIT_REG_INT;
+				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
+			}   
+			BLK
+			{
+				// popping the symbol table
+				current_sym_tbl = symbol_table_stack->pop();	
+			}
+			|
 
             FDEFS FUNC_API ';'  				                
 			{   // declaration - pass dec_line = - 1
-				function_table->add_function($2.value,-1, $2.type, args_api, scopes_api);	
+				function_table->add_function($2.value, -1, $2.type, args_api, scopes_api);	
 			}	|
 			// epsilon - do nothing
             ;
 			
 FUNC_API:   TYPE id tk_lp
-                                                                {
-																$$.value = $2.value;
-																$$.type = $1.type;
-                                                                symbol_table_stack->push(currnet_sym_tbl);
-                                                                currnet_sym_tbl = new SymbolTable();
-                                                                offset = -4;
-																args_api = new vector<Symbol>();
-                                                                }
-			FUNC_ARGS tk_rp
-                                                                {
-                                                                scopes_api = new vector<int>();
-                                                                }
-
-			SCOPES_API    	                                    ;
+			{
+				$$.value = $2.value;
+				$$.type = $1.type;
+				offset = 0;
+				args_api = new vector<Symbol>();
+				scopes_api = new vector<int>();
+			}
+			FUNC_ARGS tk_rp SCOPES_API    	                    
+			;
                                                                 
 
 SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{}      |
@@ -71,43 +76,61 @@ SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{}      |
 FUNC_ARGS:  	FUNC_ARGLIST    				                {}      |
                                                                 ; // epsilon
 
-FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL  			            
+FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
+				{
+					offset -= 4; // going down the stack for each argument
+				}
+				DCL
 				{
 					args_api->push_back(new Symbol($3.type, $3.value));
 				}	|
+				{
+					offset -= 4; // going down the stack for each argument
+				}
               	DCL                   				            
 				{
 					args_api->push_back(new Symbol($1.type, $1.value));
 				};
               
-BLK: 	'{' STLIST '}'                 				            { $$ = makeNode("BLK",NULL, $1);
-                                                                concatList($1, $2);
-                                    				            concatList($1, $3);}    ;
+BLK: 	'{'
+		{
+			// pushing the symbol table so the block won't override it.
+			symbol_table_stack->push(currnet_sym_tbl);
+			// keeping the symbol table so we could append it inside the block.
+		}
+		STLIST '}'                 				            
+		{ 
+			// popping the symbol table
+			current_sym_tbl = symbol_table_stack->pop();	
+		}	;
 
 DCL:    id ':' TYPE                 				            {
-																offset+=4;
 																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
                                                                 $$.type = $3.type;
 																$$.value = $1.value;
-                                                                commands->emit("ADD2I I2 I2 4"); // I2 += 4
                                                                 }    |
 																
         id tk_comma DCL             				            {
-																offset+=4;
 																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
 																$$.type = $3.type;
-                                                                commands->emit("ADD2I I2 I2 4"); // I2 += 4
+																$$.value = $1.value;
                                     				            }    ;
                                     
 TYPE:   tk_int     						                        { $$.type = INT; }		|
         tk_float   						                        { $$.type = FLOAT; }    |
         tk_void    						                        { $$.type = VOID; }	    ;
         
-STLIST: STLIST STMT 						                    { $$ = makeNode("STLIST",NULL, $1);
-                                                                concatList($1, $2);}    |
-                                                                {$$ = makeNode("STLIST",NULL,makeNode("EPSILON",NULL, NULL));};
+STLIST: STLIST STMT 						                    |
+                                                                ; // epsilon
         
-STMT:   DCL ';'     						                    {}	|
+STMT:   
+		{
+			offset+=4; /*going up the stack for each new variable*/
+		} 
+		DCL ';'     						        
+		{
+			commands->emit("ADD2I I2 I2 4"); // I2 += 4
+		}	|
         ASSN        						                    {}  |
         EXP ';'     						                    {}	|
         CNTRL       						                    {}  |
@@ -115,7 +138,30 @@ STMT:   DCL ';'     						                    {}	|
         WRITE       						                    {}  |
         RETURN      						                    {}  |
         BLK         						                    {}  |
-        tk_scope tk_lp integernum tk_rp BLK    			        {}  ;
+        tk_scope tk_lp integernum tk_rp     			        
+		{
+			auto it = find(scopes_api.begin(), scopes_api.end(), $3.value));
+			if (it == scopes_api.end()){
+				SemanticError(yylineno, "Scope isn't in function's scope list")
+			}
+			if(in_scope){
+				SemanticError(yylineno, "Recursive definition of scopes");
+			}
+			// here we know that the scope exists in the list && not recursive 
+			// TODO: make sure the scopes are in the same order as in the declaration?
+			in_scope = true;
+			int reg = RegisterIdx[INT]++;
+			int offset = -4 * (1 + args_api->size() + distance(scopes_api.begin(), it)); // we want to skip all Args + all scopes that before this one. distance func gives us the index of an element in vector.
+			commands->emit("LOADI I" + to_string(reg) + " I1 " + to_string(offset));
+			$$.nextlist = commands->makelist(commands->nextquad());
+			commands->emit("BREQZ I" + to_string(reg) + " "); // backpatching is needed
+			
+		}  BLK 
+		{
+			in_scope = false;
+			commands->backpatch($$.nextlist, commands->nextquad()); // backpatch the needed backpatching above
+		};
+		
         
 RETURN: tk_return EXP ';'
 		{
@@ -145,7 +191,7 @@ RETURN: tk_return EXP ';'
 WRITE:  tk_write tk_lp EXP tk_rp ';'
 		{
 			string op_type = ($3.type == INT) ? "I" : "F";
-			commands->emit("PRNT" + op_type + " " + op_type + $3.regnum);
+			commands->emit("PRNT" + op_type + " " + op_type + to_string($3.regnum));
 		}	|
 
         tk_write tk_lp str tk_rp ';'
@@ -184,13 +230,19 @@ READ:   tk_read tk_lp LVAL tk_rp ';'
 				emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
 			string op_type = ($3.type == INT) ? "I" : "F";
-			commands->emit("READ" + op_type + " " + op_type + $$.regnum);
-			commands->emit("STOR" + op_type + " " + op_type + $$.regnum + " " + op_type + addr_reg_i + " 0");
+			commands->emit("READ" + op_type + " " + op_type + to_string($$.regnum));
+			commands->emit("STOR" + op_type + " " + op_type + to_string($$.regnum) + " " + op_type + to_string(addr_reg_i) + " 0");
 		}	|
         
 ASSN:   LVAL tk_assign EXP ';'
 	{
-		current_sym_tbl->add_symbol(yylineno, $1.value, offset+=4, $3.type);
+		Type type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
+		if(type != $3.type){
+			SemanticError(yylineno, "Assignment failed - different types");
+		}
+		int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
+		string op_type = (type == INT) ? "I" : "F";
+		commands->emit("STOR" + op_type + " " + op_type + to_string($3.regnum) + " I2 " + to_string(offset); 
     };
         
 LVAL:   id                                                  	{ $$.value = $1.value; };
@@ -198,12 +250,12 @@ LVAL:   id                                                  	{ $$.value = $1.val
 CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
                                                             	commands->backpatch($2.truelist , $4.quad) ;
                                                             	commands->backpatch($2.falselist , $8.quad) ;
-                                                            	$$.nextlist = Commands::merge($5.nextlist, $7.nextlist, $9.nextlist);
+                                                            	$$.nextlist = commands->merge($5.nextlist, $7.nextlist, $9.nextlist);
                                                             	}   |
 
         tk_if BEXP tk_then M STMT                           	{
                                                             	commands->backpatch($2.truelist , $4.quad ) ;
-                                                            	$$.nextlist = Commands::merge ( $2.falselist, $5.nextlist );
+                                                            	$$.nextlist = commands->merge ( $2.falselist, $5.nextlist );
                                                             	}    |
                                                                                                         
         tk_while M BEXP tk_do M STMT                        	{
@@ -267,7 +319,7 @@ BEXP:   BEXP tk_or M BEXP     					                {
 
 			}
 			$$.falselist = commands->makelist(commands->nextquad());
-			commands->emit("goto ");
+			commands->emit("UJUMP ");
 
 		}  |
 
@@ -481,8 +533,6 @@ CALL:   id tk_lp CALL_ARGS tk_rp
 
 
             reg_idx_stack->push(RegisterIdx);
-            RegisterIdx[INT] = INIT_REG_INT;
-            RegisterIdx[FLOAT] = INIT_REG_FLOAT;
             for(command->emit("JLINK " + )
             for(int i = 0; i<RegisterIdx[INT];++i){
 
@@ -509,7 +559,7 @@ CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP    			        { $$ = makeNode("CALL_AR
                                                                 concatList($1, $3); }    |
                 EXP                          			        { $$ = makeNode("CALL_ARGLIST",NULL, $1); }    ;
 
-N:              						                        { $$.nextlist = commands->makelist(commands->nextquad()) ; emit("goto ") };
+N:              						                        { $$.nextlist = commands->makelist(commands->nextquad()) ; emit("UJUMP ") };
 
 M:              						                        { $$.quad = commands->nextquad }
 

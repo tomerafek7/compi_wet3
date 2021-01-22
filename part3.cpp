@@ -83,6 +83,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
     std::pair<std::map<string,Function*>::iterator,bool> res;
     res = table->insert(std::pair<string, Function*>(name,
                            new Function(dec_line, return_type, api, scopes)));
+    // if the insert didn't succeeded && this call is for declaration --> ERROR
     if (!res.second && dec_line != -1) { // there's already a function with this name
         // check if this function is only declared / already implemented
         if(res.first->second->dec_line == -1){ // only declared

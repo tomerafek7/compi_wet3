@@ -163,7 +163,7 @@ vector<int>* scopes_api;
 vector<Arg>* args_api;
 
 int offset = -4;
-
+bool in_scope = false;
 void SemanticError(int line_num, const char* error){
     cerr << "Semantic error: <error description> in line number <line_number>";
 
