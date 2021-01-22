@@ -36,7 +36,7 @@ PROGRAM:    FDEFS   						                    {}  ;
 FDEFS:      FDEFS FUNC_API
 			{
 				// definition - pass dec_line = nextquad
-				function_table->add_function($2->value,commands->nextquad(), $2->type, args_api, scopes_api);
+				function_table->add_function($2->value, commands->nextquad(), $2->type, args_api, scopes_api);
 				symbol_table_stack->push(currnet_sym_tbl);
 				current_sym_tbl = new SymbolTable();
 				RegisterIdx[INT] = INIT_REG_INT;
@@ -263,7 +263,7 @@ CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
                                                             	commands->backpatch($6->nextlist, $2->quad) ;
                                                             	commands->backpatch($3->truelist , $5->quad);
                                                             	$$->nextlist = $3->falselist ;
-                                                            	commands->emit('UJUMP ' + $2->quad);
+                                                            	commands->emit("UJUMP " + $2->quad);
 																};
 
 BEXP:   BEXP tk_or M BEXP     					                {

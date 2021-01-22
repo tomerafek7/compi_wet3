@@ -100,16 +100,16 @@ vector<int>* FunctionTable::get_scope(string &name){
 
 // dec_line = -1 if this is only a declaration.
 void FunctionTable::add_function(string &name, int dec_line, Type return_type,
-        vector<Symbol> & api, vector<int> & scopes){
+        vector<Symbol>* api, vector<int>* scopes){
     std::pair<std::map<string,Function*>::iterator,bool> res;
     res = table->insert(std::pair<string, Function*>(name,
-                           new Function(dec_line, return_type, api, scopes,name)));
+                           new Function(dec_line, return_type, *api, *scopes, name)));
     // if the insert didn't succeeded && this call is for declaration --> ERROR
     if (!res.second && dec_line != -1) { // there's already a function with this name
         // check if this function is only declared / already implemented
         if(res.first->second->dec_line == -1){ // only declared
             // check if api & scopes are similar:
-            if(api != *res.first->second->api || scopes != *res.first->second->scopes){
+            if(*api != *res.first->second->api || *scopes != *res.first->second->scopes){
                 SemanticError(dec_line, "Wrong API/Scopes for implementation of function");
                 // assuming SemanticError calls exit()
             }
