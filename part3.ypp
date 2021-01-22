@@ -7,8 +7,6 @@
     extern int yylex();
     extern int yylineno;
     void yyerror(char const * message);
-	
-    ParserNode* parseTree = NULL;
     
 %}
 
