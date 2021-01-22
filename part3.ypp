@@ -1,6 +1,6 @@
 %{
     #include "part3.hpp"
-    #include <stdio.h>
+    #include <stdio->h>
     using namespace std;
     
     extern char *yytext;
@@ -44,7 +44,7 @@ FDEFS:      FDEFS FUNC_API
 				RegisterIdx[INT] = INIT_REG_INT;
 				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
 				offset = 0;
-				scopes_iter = scopes_api.begin();
+				scopes_iter = scopes_api->begin();
 			}
 			BLK
 			{
@@ -63,7 +63,7 @@ FDEFS:      FDEFS FUNC_API
 FUNC_API:   TYPE id tk_lp
 			{
 				$$->value = $2->value;
-				$$.type = $1.type;
+				$$->type = $1->type;
 				offset = 0;
 				args_api = new vector<Symbol>();
 				scopes_api = new vector<int>();
@@ -151,7 +151,7 @@ STMT:
 			// here we know that the scope exists in the list && not recursive
 			in_scope = true;
 			int reg = RegisterIdx[INT]++;
-			int offset = -4 * (1 + args_api->size() + distance(scopes_api.begin(), scopes_iter)); // we want to skip all Args + all scopes that before this one. distance func gives us the index of an element in vector.
+			int offset = -4 * (1 + args_api->size() + distance(scopes_api->begin(), scopes_iter)); // we want to skip all Args + all scopes that before this one. distance func gives us the index of an element in vector.
 			commands->emit("LOADI I" + to_string(reg) + " I1 " + to_string(offset));
 			$$->nextlist = commands->makelist(commands->nextquad());
 			commands->emit("BREQZ I" + to_string(reg) + " "); // backpatching is needed
@@ -249,42 +249,42 @@ ASSN:   LVAL tk_assign EXP ';'
 LVAL:   id                                                  	{ $$->value = $1->value; };
 	
 CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
-                                                            	commands->backpatch($2.truelist , $4.quad) ;
-                                                            	commands->backpatch($2.falselist , $8.quad) ;
-                                                            	$$.nextlist = commands->merge($5.nextlist, $7.nextlist, $9.nextlist);
+                                                            	commands->backpatch($2->truelist , $4->quad) ;
+                                                            	commands->backpatch($2->falselist , $8->quad) ;
+                                                            	$$->nextlist = commands->merge($5->nextlist, $7->nextlist, $9->nextlist);
                                                             	}   |
 
         tk_if BEXP tk_then M STMT                           	{
-                                                            	commands->backpatch($2.truelist , $4.quad ) ;
-                                                            	$$.nextlist = commands->merge ( $2.falselist, $5.nextlist );
+                                                            	commands->backpatch($2->truelist , $4->quad ) ;
+                                                            	$$->nextlist = commands->merge ( $2->falselist, $5->nextlist );
                                                             	}    |
                                                                                                         
         tk_while M BEXP tk_do M STMT                        	{
-                                                            	commands->backpatch($6.nextlist, $2.quad) ;
-                                                            	commands->backpatch($3.truelist , $5.quad);
-                                                            	$$.nextlist = $3.falselist ;
-                                                            	commands->emit('UJUMP ' + $2.quad);
+                                                            	commands->backpatch($6->nextlist, $2->quad) ;
+                                                            	commands->backpatch($3->truelist , $5->quad);
+                                                            	$$->nextlist = $3->falselist ;
+                                                            	commands->emit('UJUMP ' + $2->quad);
 																};
 
 BEXP:   BEXP tk_or M BEXP     					                {
-																commands->backpatch($1.falselist, $3.quad);
-																$$.truelist = commands->merge($1.truelist, $4.truelist);
-																$$.falselist = $4.falselist ; 
+																commands->backpatch($1->falselist, $3->quad);
+																$$->truelist = commands->merge($1->truelist, $4->truelist);
+																$$->falselist = $4->falselist ;
 																}  |
     	BEXP tk_and M BEXP    					                {
-																commands->backpatch($1.truelist, $3.quad);
-																$$.falselist = commands->merge($1.truelist, $4.truelist);
-																$$.truelist = $4.falselist ; 
+																commands->backpatch($1->truelist, $3->quad);
+																$$->falselist = commands->merge($1->truelist, $4->truelist);
+																$$->truelist = $4->falselist ;
 																}  |
 
     	tk_not BEXP         					                {
-                                                                $$.truelist = $2.falselist ; 
-																$$.falselist = $2.truelist ; 
+                                                                $$->truelist = $2->falselist ;
+																$$->falselist = $2->truelist ;
                                                                 }  |
 
     	EXP relop EXP
 		{
-			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands..
+			$$->truelist = commands->makelist(commands->nextquad() + 1); // there are two commands->.
 			if($1->type != $3->type){
 				SemanticError(yylineno,"Cannot Compare Expressions with different types");
 			}
@@ -319,14 +319,14 @@ BEXP:   BEXP tk_or M BEXP     					                {
 					break;
 
 			}
-			$$.falselist = commands->makelist(commands->nextquad());
+			$$->falselist = commands->makelist(commands->nextquad());
 			commands->emit("UJUMP ");
 
 		}  |
 
     	tk_lp BEXP tk_rp        				                {
-                                                                $$.truelist = $2.truelist ; 
-																$$.falselist = $2.falselist ;  
+                                                                $$->truelist = $2->truelist ;
+																$$->falselist = $2->falselist ;
 																} ;
         
 EXP:    EXP addop EXP       					                
@@ -494,7 +494,7 @@ CALL:   id tk_lp
         }
         CALL_ARGS tk_rp
         {
-            called_scope = new vector<int>();
+            called_scopes = new vector<int>();
         }
         ACTIVATE_SCOPES
         {
@@ -512,9 +512,9 @@ CALL:   id tk_lp
             }
             commands->emit("COPYI I3 0");
             commands->emit("COPYI I4 1");
-            vector<int>* func_scopes = function_table.get_scopes($1->value);
+            vector<int>* func_scopes = function_table->get_scopes($1->value);
             for(vector<int>::reverse_iterator it = func_scopes->rbegin(); it != func_scopes->rend(); ++it){
-                if(find(called_scope->begin(), called_scope->end(), *it) != func_scopes.rend()){
+                if(find(called_scopes->begin(), called_scopes->end(), *it) != func_scopes->rend()){
                     return_val_offset += 4;
                     commands->emit("STORI I4 I2 "+ to_string(return_val_offset));
                 } else {
@@ -535,9 +535,9 @@ CALL:   id tk_lp
             commands->emit("ADD2I I1 I1 " + to_string(return_val_offset));
             $$->value = return_val_offset;
             int func_line = commands->nextquad()
-            function_table.add_call($1->value,func_line,arg_list,called_scope);
+            function_table->add_call($1->value,func_line,called_args,called_scopes);
             commands->emit("JLINK " + to_string(func_line));
-            return_val_offset -= arg_list.size() + func_scopes.size() + 4;
+            return_val_offset -= called_args->size() + func_scopes->size() + 4;
             for(int i = 0; i<RegisterIdx[INT];++i){
                 commands->emit("STORF F" + to_string(i) + "F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
                 return_val_offset -= 4;
@@ -554,11 +554,11 @@ ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
 
 SCOPES_LIST:    SCOPES_LIST tk_comma integernum
                 {
-                    called_scope->push_back($3->value);
+                    called_scopes->push_back($3->value);
                 }    |
                 integernum
                 {
-                    called_scope->push_back($1->value);
+                    called_scopes->push_back($1->value);
                 }    ;
 
 CALL_ARGS:  CALL_ARGLIST
@@ -576,12 +576,12 @@ CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
 
 N:
                 {
-                    $$.nextlist = commands->makelist(commands->nextquad()) ; emit("UJUMP ")
+                    $$->nextlist = commands->makelist(commands->nextquad()) ; emit("UJUMP ")
                 };
 
 M:
                 {
-                    $$.quad = commands->nextquad();
+                    $$->quad = commands->nextquad();
                 }
 
 
