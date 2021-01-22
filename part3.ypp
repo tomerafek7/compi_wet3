@@ -251,7 +251,7 @@ LVAL:   id                                                  	{ $$->value = $1->v
 CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
                                                             	commands->backpatch($2->truelist , $4->quad) ;
                                                             	commands->backpatch($2->falselist , $8->quad) ;
-                                                            	$$->nextlist = commands->merge($5->nextlist, $7->nextlist, $9->nextlist);
+                                                            	$$->nextlist = commands->merge($5->nextlist, commands->merge($7->nextlist, $9->nextlist));
                                                             	}   |
 
         tk_if BEXP tk_then M STMT                           	{
