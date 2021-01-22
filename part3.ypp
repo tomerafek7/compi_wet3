@@ -55,7 +55,7 @@ FUNC_API:   TYPE id tk_lp
                                                                 symbol_table_stack->push(currnet_sym_tbl);
                                                                 currnet_sym_tbl = new SymbolTable();
                                                                 offset = -4;
-																args_api = new vector<Arg>();
+																args_api = new vector<Symbol>();
                                                                 }
 			FUNC_ARGS tk_rp
                                                                 {
@@ -73,11 +73,11 @@ FUNC_ARGS:  	FUNC_ARGLIST    				                {}      |
 
 FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL  			            
 				{
-					args_api->push_back(new Arg($3.type, $3.value));
+					args_api->push_back(new Symbol($3.type, $3.value));
 				}	|
               	DCL                   				            
 				{
-					args_api->push_back(new Arg($1.type, $1.value));
+					args_api->push_back(new Symbol($1.type, $1.value));
 				};
               
 BLK: 	'{' STLIST '}'                 				            { $$ = makeNode("BLK",NULL, $1);
@@ -444,13 +444,17 @@ NUM:    integernum
 			$$.value = $1.value;
 		}  ;
         
-CALL:   id tk_lp CALL_ARGS tk_rp
+CALL:   id tk_lp
         {
-            scopes_api = new vector<int>();
+            called_args = new vector<Symbol>();
+        }
+        CALL_ARGS tk_rp
+        {
+            called_scope = new vector<int>();
         }
         ACTIVATE_SCOPES
         {
-            vector<int>* func_scopes = function_table.add_call($1.value,yylineno,arg_list,scopes_api);
+            vector<int>* func_scopes = function_table.add_call($1.value,yylineno,arg_list,called_scope);
             int return_val_offset = 0;
             //All register are calle safe
             int stack_ptr_float = RegisterIdx[FLOAT]+1;
@@ -467,7 +471,7 @@ CALL:   id tk_lp CALL_ARGS tk_rp
             commands->emit("COPYI I4 1");
             vector<int>* func_scopes = function_table.get_api($1.value,yylineno)
             for(vector<int>::reverse_iterator it = func_scopes->rbegin(); it != func_scopes->rend(); ++it){
-                if(find(scopes_api->begin(), scopes_api->end(), *it) != func_scopes.rend()){
+                if(find(called_scope->begin(), called_scope->end(), *it) != func_scopes.rend()){
                     return_val_offset += 4;
                     commands->emit("STORI I4 I2 "+ to_string(return_val_offset))
                 } else {
@@ -475,19 +479,18 @@ CALL:   id tk_lp CALL_ARGS tk_rp
                     commands->emit("STORI I3 I2 "+ to_string(return_val_offset))
                 }
             }
-            for(vector<Arg>::reverse_iterator it = args_api->rbegin(); it != args_api->rend(); ++it){
+            for(vector<Symbol>::reverse_iterator it = called_args->rbegin(); it != called_args->rend(); ++it){
                 return_val_offset += 4;
                 if(*it.type == FLOAT){
                     commands->emit("STORF F" + to_string(*it.regnum) + "F2 " + to_string(return_val_offset));
                 } else {
                     commands->emit("STORI I" + to_string(*it.regnum) + "I2 " + to_string(return_val_offset));
                 }
-
             }
             return_val_offset += 4;
             commands->emit("ADD2I I2 I2 " + to_string(return_val_offset));
             commands->emit("ADD2I I1 I1 " + to_string(return_val_offset));
-
+            $$.value = return_val_offset;
 
             reg_idx_stack->push(RegisterIdx);
             RegisterIdx[INT] = INIT_REG_INT;
@@ -502,25 +505,34 @@ CALL:   id tk_lp CALL_ARGS tk_rp
         };
 
 ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
-                {
-
-                }    |
+                {}    |
                 ;
 
-SCOPES_LIST:    SCOPES_LIST tk_comma integernum     		    { scopes_api->push_back($3.value); }    |
-                integernum                          		    { scopes_api->push_back($1.value); }    ;
+SCOPES_LIST:    SCOPES_LIST tk_comma integernum
+                {
+                    called_scope->push_back($3.value);
+                }    |
+                integernum
+                {
+                    called_scope->push_back($1.value);
+                }    ;
 
-CALL_ARGS:  CALL_ARGLIST    					                { $$ = makeNode("CALL_ARGS",NULL, $1); }    |
-                            					                { $$ = makeNode("CALL_ARGS",NULL,makeNode("EPSILON",NULL, NULL)); };
+CALL_ARGS:  CALL_ARGLIST
+                {}    |
+                {};
             
-CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP    			        { $$ = makeNode("CALL_ARGLIST",NULL, $1);
-                                                                concatList($1, $2);
-                                                                concatList($1, $3); }    |
-                EXP                          			        { $$ = makeNode("CALL_ARGLIST",NULL, $1); }    ;
+CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
+                {
+                    called_args->push_back(Symbol($3.type, $3.regnum));
+                }    |
+                EXP
+                {
+                    called_args->push_back(Symbol($1.type, $1.regnum));
+                };
 
-N:              						                        { $$.nextlist = commands->makelist(commands->nextquad()) ; emit("goto ") };
+N:              { $$.nextlist = commands->makelist(commands->nextquad()) ; emit("goto ") };
 
-M:              						                        { $$.quad = commands->nextquad }
+M:              { $$.quad = commands->nextquad }
 
 
 
