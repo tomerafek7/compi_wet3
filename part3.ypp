@@ -66,7 +66,7 @@ FUNC_API:   TYPE id tk_lp
 				$$->value = $2->value;
 				$$->type = $1->type;
 				offset = 0;
-				args_api = new vector<Symbol>();
+				args_api = new vector<Symbol*>();
 				scopes_api = new vector<int>();
 			}
 			FUNC_ARGS tk_rp SCOPES_API
@@ -515,7 +515,7 @@ CALL:   id tk_lp
             commands->emit("COPYI I4 1");
             vector<int>* func_scopes = function_table->get_scope($1->value);
             for(vector<int>::reverse_iterator it = func_scopes->rbegin(); it != func_scopes->rend(); ++it){
-                if(find(called_scopes->begin(), called_scopes->end(), *it) != func_scopes->rend()){
+                if(find(called_scopes->begin(), called_scopes->end(), *it) != called_scopes->end()){
                     return_val_offset += 4;
                     commands->emit("STORI I4 I2 "+ to_string(return_val_offset));
                 } else {
@@ -525,7 +525,7 @@ CALL:   id tk_lp
             }
             for(vector<Symbol>::reverse_iterator it = called_args->rbegin(); it != called_args->rend(); ++it){
                 return_val_offset += 4;
-                if(*it->type == FLOAT){
+                if(it->type == FLOAT){
                     commands->emit("STORF F" + to_string(it->reg) + "F2 " + to_string(return_val_offset));
                 } else {
                     commands->emit("STORI I" + to_string(it->reg) + "I2 " + to_string(return_val_offset));
@@ -535,7 +535,7 @@ CALL:   id tk_lp
             commands->emit("ADD2I I2 I2 " + to_string(return_val_offset));
             commands->emit("ADD2I I1 I1 " + to_string(return_val_offset));
             $$->value = return_val_offset;
-            int func_line = commands->nextquad()
+            int func_line = commands->nextquad();
             function_table->add_call($1->value,func_line,called_args,called_scopes);
             commands->emit("JLINK " + to_string(func_line));
             return_val_offset -= called_args->size() + func_scopes->size() + 4;
