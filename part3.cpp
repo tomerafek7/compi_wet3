@@ -20,17 +20,17 @@ stack<int[2]>* reg_idx_stack = new stack<int[2]>();
 
 stack<int>* rtrn_vl_ofst_stk = new stack<int>();
 
-void Commands::backpatch(vector<int> list, int address){
-    for (vector<int>::iterator it = list.begin() ; it != list.end(); ++it){
+void Commands::backpatch(vector<int>* list, int address){
+    for (vector<int>::iterator it = list->begin() ; it != list->end(); ++it){
          command_list[*it] += to_string(address);
     }
 }
 
-vector<int>& Commands::merge(vector<int> list_1, vector<int> list_2){
+vector<int>& Commands::merge(vector<int>* list_1, vector<int>* list_2){
     vector<int>* res = new vector<int>();
-    res->reserve( list_1.size() + list_2.size() ); // preallocate memory
-    res->insert( res->end(), list_1.begin(), list_1.end() );
-    res->insert( res->end(), list_2.begin(), list_2.end() );
+    res->reserve( list_1->size() + list_2->size() ); // preallocate memory
+    res->insert( res->end(), list_1->begin(), list_1->end() );
+    res->insert( res->end(), list_2->begin(), list_2->end() );
     return *res;
 }
 

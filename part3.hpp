@@ -73,9 +73,9 @@ public:
 
     Commands();
 
-    void backpatch(vector<int> list, int address);
+    void backpatch(vector<int>* list, int address);
 
-    vector<int> &merge(vector<int> list_1, vector<int> list_2);
+    vector<int> &merge(vector<int>* list_1, vector<int>* list_2);
 
     void emit(string command);
 
