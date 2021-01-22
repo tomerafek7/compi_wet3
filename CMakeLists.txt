@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10) # Optional..
 project(hw3)
 
 set(CMAKE_CXX_STANDARD 14) # C++ 14 is needed for the following commands!
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0") # -O0 flag to disable compiler optimizations
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0") # -O0 flag to disable compiler optimization
  #to give more precise breakpoints stops.
 
 FIND_PACKAGE(BISON) # Those two should be installed on your toolchain.
