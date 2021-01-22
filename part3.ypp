@@ -44,6 +44,7 @@ FDEFS:      FDEFS FUNC_API
 				RegisterIdx[INT] = INIT_REG_INT;
 				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
 				offset = 0;
+				scopes_iter = scopes_api.begin();
 			}
 			BLK
 			{
@@ -141,21 +142,20 @@ STMT:
         BLK         						                    {}  |
         tk_scope tk_lp integernum tk_rp
 		{
-			auto it = find(scopes_api.begin(), scopes_api.end(), $3.value));
-			if (it == scopes_api.end()){
-				SemanticError(yylineno, "Scope isn't in function's scope list")
+			if (*scopes_iter != $3.value){
+				SemanticError(yylineno, "Scope isn't in function's scope list OR scopes are in wrong order")
 			}
 			if(in_scope){
 				SemanticError(yylineno, "Recursive definition of scopes");
 			}
 			// here we know that the scope exists in the list && not recursive
-			// TODO: make sure the scopes are in the same order as in the declaration?
 			in_scope = true;
 			int reg = RegisterIdx[INT]++;
-			int offset = -4 * (1 + args_api->size() + distance(scopes_api.begin(), it)); // we want to skip all Args + all scopes that before this one. distance func gives us the index of an element in vector.
+			int offset = -4 * (1 + args_api->size() + distance(scopes_api.begin(), scopes_iter)); // we want to skip all Args + all scopes that before this one. distance func gives us the index of an element in vector.
 			commands->emit("LOADI I" + to_string(reg) + " I1 " + to_string(offset));
 			$$.nextlist = commands->makelist(commands->nextquad());
 			commands->emit("BREQZ I" + to_string(reg) + " "); // backpatching is needed
+			scopes_iter++;
 
 		}  BLK
 		{

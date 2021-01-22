@@ -43,6 +43,25 @@ vector<int> nextlist;
 
 } Line;
 
+ParserNode *makeNode(const char* type,const char* value, ParserNode *child)
+{
+    ParserNode *p;
+
+    if ((p = (ParserNode*)(malloc(sizeof(ParserNode)))) == 0)
+        fprintf(stderr, "Failed malloc(struct node)\n");
+    else {
+        p->type = strdup(type);
+        if (value != NULL) {
+            p->value = strdup(value);
+        } else {
+            p->value = NULL;
+        }
+        p->child = child;
+        p->sibling = (ParserNode*)NULL;
+    }
+    return(p);
+}
+
 
 class Commands {
 public:
@@ -156,12 +175,16 @@ extern FunctionTable* function_table;
 
 extern stack<int>* rtrn_vl_ofst_stk;
 
+extern vector<int>::iterator scopes_iter;
+
 vector<int>* scopes_api;
 vector<Symbol>* args_api;
 vector<int>* called_scopes;
 vector<Symbol>* called_args;
 int offset = -4;
 bool in_scope = false;
+
+
 void SemanticError(int line_num, const char* error){
     cerr << "Semantic error: <error description> in line number <line_number>";
     exit(Semantic);
