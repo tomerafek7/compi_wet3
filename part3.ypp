@@ -68,6 +68,7 @@ FUNC_API:   TYPE id tk_lp
 				offset = 0;
 				args_api = new vector<Symbol*>();
 				scopes_api = new vector<int>();
+				called_scopes = new vector<int>();
 				cout << "init vectors" << endl;
 			}
 			FUNC_ARGS tk_rp SCOPES_API
