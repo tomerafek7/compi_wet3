@@ -101,11 +101,11 @@ FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
 				};
               
 BLK: 	'{'
-		{
+		//{
 			// pushing the symbol table so the block won't override it.
-			symbol_table_stack->push(current_sym_tbl);
-			// keeping the symbol table so we could append it inside the block.
-		}
+		//	symbol_table_stack->push(current_sym_tbl);
+	//		// keeping the symbol table so we could append it inside the block.
+//		}
 		STLIST '}'
 		{
 			// popping the symbol table
