@@ -560,14 +560,14 @@ ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
 SCOPES_LIST:    SCOPES_LIST tk_comma integernum
                 {
 					if(in_call){
-						if(called_scopes->contains(stoi($3.value))){
-							SemanticError("Call function with 2 similar scopes");
+						if(find(called_scopes->begin(), called_scopes->end(), $3.value) != called_scopes->end()){
+							SemanticError(yylineno, "Call function with 2 similar scopes");
 						} else {
 							called_scopes->push_back(stoi($3.value));	
 						}
 					} else {
-						if(scopes_api->contains(stoi($3.value))){
-							SemanticError("Declaration of function with 2 similar scopes");
+						if(find(scopes_api->begin(), scopes_api->end(), $3.value) != scopes_api->end()){
+							SemanticError(yylineno, "Declaration of function with 2 similar scopes");
 						} else {
 							scopes_api->push_back(stoi($3.value));
 						}
@@ -576,14 +576,14 @@ SCOPES_LIST:    SCOPES_LIST tk_comma integernum
                 integernum
                 {
 					if(in_call){
-						if(called_scopes->contains(stoi($1.value))){
-							SemanticError("Call function with 2 similar scopes");
+						if(find(called_scopes->begin(), called_scopes->end(), $1.value) != called_scopes->end()){
+							SemanticError(yylineno, "Call function with 2 similar scopes");
 						} else {
 							called_scopes->push_back(stoi($1.value));	
 						}
 					} else {
-						if(scopes_api->contains(stoi($1.value))){
-							SemanticError("Declaration of function with 2 similar scopes");
+						if(find(scopes_api->begin(), scopes_api->end(), $1.value) != scopes_api->end()){
+							SemanticError(yylineno, "Declaration of function with 2 similar scopes");
 						} else {
 							scopes_api->push_back(stoi($1.value));
 						}
