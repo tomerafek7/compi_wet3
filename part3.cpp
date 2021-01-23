@@ -19,18 +19,18 @@ int offset;
 bool in_scope = false;
 
 
-void Commands::backpatch(vector<int>* list, int address){
-    for (vector<int>::iterator it = list->begin() ; it != list->end(); ++it){
+void Commands::backpatch(vector<int>& list, int address){
+    for (vector<int>::iterator it = list.begin() ; it != list.end(); ++it){
          command_list[*it] += to_string(address);
     }
 }
 
-vector<int>* Commands::merge(vector<int>* list_1, vector<int>* list_2){
+vector<int>& Commands::merge(vector<int>& list_1, vector<int>& list_2){
     vector<int>* res = new vector<int>();
-    res->reserve( list_1->size() + list_2->size() ); // preallocate memory
-    res->insert( res->end(), list_1->begin(), list_1->end() );
-    res->insert( res->end(), list_2->begin(), list_2->end() );
-    return res;
+    res->reserve( list_1.size() + list_2.size() ); // preallocate memory
+    res->insert( res->end(), list_1.begin(), list_1.end() );
+    res->insert( res->end(), list_2.begin(), list_2.end() );
+    return *res;
 }
 
 void Commands::emit(string command){
@@ -217,28 +217,28 @@ Type SymbolTable::get_symbol_type(int call_line, string &name){
     }
     return this->table->at(name)->type;
 }
-
-Line* makeLine(const char *type, const char *value) {
-
-    Line *p;
-
-    if ((p = (Line *) (malloc(sizeof(Line)))) == 0)
-        fprintf(stderr, "Failed malloc(struct node)\n");
-    else {
-        p->type = INT;
-        if (value != nullptr) {
-            p->value = strdup(value);
-        } else {
-            p->value = string();
-        }
-    }
-    p->reg = 0;
-    p->quad = 0;
-    p->truelist = new vector<int>();
-    p->falselist = new vector<int>();
-    p->nextlist = new vector<int>();
-    return (p);
-}
+//
+//Line* makeLine(const char *type, const char *value) {
+//
+//    Line *p;
+//
+//    if ((p = (Line *) (malloc(sizeof(Line)))) == 0)
+//        fprintf(stderr, "Failed malloc(struct node)\n");
+//    else {
+//        p->type = INT;
+//        if (value != nullptr) {
+//            p->value = strdup(value);
+//        } else {
+//            p->value = string();
+//        }
+//    }
+//    p->reg = 0;
+//    p->quad = 0;
+//    p->truelist = new vector<int>();
+//    p->falselist = new vector<int>();
+//    p->nextlist = new vector<int>();
+//    return (p);
+//}
 
 void SemanticError(int line_num, const char* error){
     cerr << "Semantic error: <error description> in line number <line_number>";
