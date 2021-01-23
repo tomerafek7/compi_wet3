@@ -295,7 +295,7 @@ void SemanticError(int line_num, const char* error){
 /**************************************************************************/
 extern int yyparse (void);
 
-int main(){
+/*int main(){
 
     string mystr = "abc";
     auto args = new vector<Symbol*>();
@@ -350,9 +350,8 @@ int main(){
 //    symbol_table_stack->pop();
 //    current_sym_tbl->get_symbol_offset(2,str);
 //    current_sym_tbl->get_symbol_type(2,str);
-}
+}*/
 
-/*
 int main(int argc, char* argv[]){
     int rc;
     string arg_file = argv[1];
@@ -416,4 +415,3 @@ int main(int argc, char* argv[]){
     file.close();
     return rc;
 }
-*/
