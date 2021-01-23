@@ -225,7 +225,8 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
 					        break;
 					}
 				} else{
-					commands->emit("PRNTC ");
+                    int temp =(int)(*str);
+					commands->emit("PRNTC " + to_string(temp));
 				}
 					str++;
 			}
