@@ -294,29 +294,42 @@ extern int yyparse (void);
 
 /*int main(){
 
-    string mystr = "abc";
-    auto args = new vector<Symbol*>();
-    auto scopes = new vector<int>();
-    args->push_back(new Symbol(30,INT,mystr));
-    args->push_back(new Symbol(30,INT,mystr));
-    args->push_back(new Symbol(30,INT,mystr));
-    scopes->push_back(2);
-    scopes->push_back(10);
-    scopes->push_back(100);
-    function_table->add_function(mystr,-1,INT,args,scopes,0);
-    //args->pop_back();
-    //args->push_back(new Symbol(30,FLOAT,mystr));
-    function_table->add_call(mystr,0,args,scopes);
-    commands->emit("JLINK -1");
-    function_table->add_call(mystr,1,args,scopes);
-    commands->emit("JLINK -1");
-    function_table->add_call(mystr,2,args,scopes);
-    commands->emit("JLINK -1");
-    function_table->add_call(mystr,3,args,scopes);
-    commands->emit("JLINK -1");
-    function_table->add_function(mystr,10,INT,args,scopes,0);
-    mystr = "abdff";
-    function_table->add_function(mystr,10,INT,args,scopes,1);
+//    string mystr = "abc";
+//    auto args = new vector<Symbol*>();
+//    auto scopes = new vector<int>();
+//    args->push_back(new Symbol(30,INT,mystr));
+//    args->push_back(new Symbol(30,INT,mystr));
+//    args->push_back(new Symbol(30,INT,mystr));
+//    scopes->push_back(2);
+//    scopes->push_back(10);
+//    scopes->push_back(100);
+//    function_table->add_function(mystr,-1,INT,args,scopes,0);
+//    //args->pop_back();
+//    //args->push_back(new Symbol(30,FLOAT,mystr));
+//    function_table->add_call(mystr,0,args,scopes);
+//    commands->emit("JLINK -1");
+//    function_table->add_call(mystr,1,args,scopes);
+//    commands->emit("JLINK -1");
+//    function_table->add_call(mystr,2,args,scopes);
+//    commands->emit("JLINK -1");
+//    function_table->add_call(mystr,3,args,scopes);
+//    commands->emit("JLINK -1");
+//    function_table->add_function(mystr,10,INT,args,scopes,0);
+//    mystr = "abdff";
+//    function_table->add_function(mystr,10,INT,args,scopes,1);
+//
+//    commands->emit("JUMP ");
+//    commands->emit("JUMP ");
+//    commands->emit("JUMP ");
+//    commands->emit("JUMP ");
+//    commands->emit("JUMP ");
+//    auto list = new vector<int>();
+//    for(int i=0;i<5;i++){
+//        list->push_back(i);
+//    }
+//    commands->backpatch(*list, 555);
+//    cout << "";
+
 
 //
 //    vector<int>* l1 = new vector<int>();
