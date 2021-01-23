@@ -13,9 +13,7 @@
 %}
 
 %token id str integernum realnum 
-%token tk_int tk_float tk_void tk_write tk_read tk_while tk_do tk_return tk_activate tk_scope tk_scopes
-%nonassoc tk_if tk_then
-%nonassoc tk_else
+%token tk_int tk_float tk_void tk_write tk_read tk_while tk_do tk_return tk_activate tk_scope tk_scopes tk_if
 %left tk_comma
 %right tk_assign
 %left tk_or
@@ -28,6 +26,10 @@
 %left tk_rp '{'
 %right tk_lp '}'
 
+
+%precedence tk_then
+%precedence tk_else
+	
 %%
 //
 //STACK POINTER == I2
