@@ -207,8 +207,10 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
 			char *str = new char[$3.value.length() + 1];
 			strcpy(str, $3.value.c_str());
 			while(*str){
+                cout <<" should print: " (char)(*str)<<endl;
 				if(*str == '\\'){ // the first \ is for escaped..
 					str++;
+
 					switch(*str){
 						case 'n':
 							commands->emit("PRNTC 10"); // 10 is LF in ascii
