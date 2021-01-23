@@ -2,6 +2,8 @@
 
 #include <utility>
 
+extern "C"	FILE *yyin;
+
 // global variables
 Commands* commands = new Commands();
 stack<SymbolTable*>* symbol_table_stack = new stack<SymbolTable*>();
@@ -15,6 +17,7 @@ vector<int>* called_scopes;
 vector<Symbol>* called_args;
 int offset;
 bool in_scope = false;
+
 
 void Commands::backpatch(vector<int>* list, int address){
     for (vector<int>::iterator it = list->begin() ; it != list->end(); ++it){
@@ -246,7 +249,9 @@ extern int yyparse (void);
 
 int main(int argc, char* argv[]){
     int rc;
-    char* filename = argv[0];
+    string arg_file = argv[0];
+    string filename = arg_file.substr(0,arg_file.find_last_of('.'))+".rsk";
+
     ofstream file;
     file.open(filename);
     if(!file.is_open()) {
@@ -254,10 +259,15 @@ int main(int argc, char* argv[]){
         exit(Operational);
     }
 
+//    streambuf* oldCStreamBuf = cin.rdbuf();
+//    ostringstream strCout;
+//    cin.rdbuf( strCout.rdbuf() );
+
 #if YYDEBUG
     yydebug=1;
 #endif
 
+    yyin = fopen(argv[1], "r");
     rc = yyparse();
     assert (rc == 0);  // Parsed successfully
     // print header:
