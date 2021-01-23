@@ -2,13 +2,19 @@
 
 #include <utility>
 
-
-
-//FIXME move global variables to main
-
-
-
-
+// global variables
+Commands* commands = new Commands();
+stack<SymbolTable*>* symbol_table_stack = new stack<SymbolTable*>();
+int RegisterIdx[2];
+SymbolTable* current_sym_tbl = new SymbolTable();
+FunctionTable* function_table = new FunctionTable();
+vector<int>::iterator scopes_iter;
+vector<int>* scopes_api;
+vector<Symbol>* args_api;
+vector<int>* called_scopes;
+vector<Symbol>* called_args;
+int offset;
+bool in_scope = false;
 
 void Commands::backpatch(vector<int>* list, int address){
     for (vector<int>::iterator it = list->begin() ; it != list->end(); ++it){
@@ -246,16 +252,6 @@ int main(int argc, char** argv){
 #if YYDEBUG
     yydebug=1;
 #endif
-
-    commands = new Commands();
-
-    function_table = new FunctionTable();
-
-    symbol_table_stack = new stack<SymbolTable*>();
-
-    current_sym_tbl = new SymbolTable();
-
-    in_scope = false;
 
     rc = yyparse();
     assert (rc == 0);  // Parsed successfully

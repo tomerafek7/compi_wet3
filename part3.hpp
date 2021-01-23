@@ -155,19 +155,13 @@ public:
 };
 
 
-
+// global variables
 extern Commands *commands;
-
 extern stack<SymbolTable*>* symbol_table_stack;
-
 extern int RegisterIdx[2];
-
 extern SymbolTable* current_sym_tbl;
-
 extern FunctionTable* function_table;
-
 extern vector<int>::iterator scopes_iter;
-
 extern vector<int>* scopes_api;
 extern vector<Symbol>* args_api;
 extern vector<int>* called_scopes;
