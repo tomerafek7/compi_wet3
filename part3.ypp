@@ -251,7 +251,7 @@ ASSN:   LVAL tk_assign EXP ';'
 		}
 		int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
 		string op_type = (type == INT) ? "I" : "F";
-		commands->emit("STOR" + op_type + " " + op_type + to_string($3.reg) + " I2 " + to_string(offset));
+		commands->emit("STOR" + op_type + " " + op_type + to_string($3.reg) + " I1 " + to_string(offset));
     };
         
 LVAL:   id                                                  	{ $$.value = $1.value; };
@@ -428,9 +428,23 @@ EXP:    EXP addop EXP
         tk_lp TYPE tk_rp EXP    				                
 		{
 			$$.type = $2.type;
-			$$.reg = RegisterIdx[$$.type]++;
-			string op_type = ($$.type == INT) ? "I" : "F";
-			commands->emit("COPY" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string($4.reg));
+			Type exp_type = $4.type;
+			if($2.type == exp_type){
+				$$.reg = $4.reg; // do nothing
+			} else{
+				$$.reg = RegisterIdx[$$.type]++;
+				if($2.type == INT){
+					// meaning that EXP is float
+					commands->emit("CFTOI I" + to_string($$.reg) + " F" + to_string($4.reg));
+				} else if($2.type == FLOAT){
+					// meaning that EXP is int
+					commands->emit("CITOF F" + to_string($$.reg) + " I" + to_string($4.reg));
+				} else {
+					// void
+					SemanticError(yylineno, "Cannot convert to void");
+				}
+				
+			}
 		}  |
 
         id              					                    
