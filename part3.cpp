@@ -131,9 +131,9 @@ static bool is_vectors_equal(vector<int>& vec1, vector<int>& vec2){
 
 // dec_line = -1 if this is only a declaration.
 void FunctionTable::add_function(string &name, int dec_line, Type return_type,
-        vector<Symbol*>* api, vector<int>* scopes) {
+        vector<Symbol*>* api, vector<int>* scopes, int cmm_line_no) {
     cout << "entered add function method with dec_line = "
-         << to_string(dec_line) << endl;
+         << to_string(cmm_line_no) << endl;
     std::pair<std::map<string, Function *>::iterator, bool> res;
     res = table->insert(std::pair<string, Function *>(name,
                                                       new Function(dec_line,
@@ -145,16 +145,16 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         return;
     } else { // didn't insert (there's already a function with this name)
         if (dec_line == -1) { // declaration
-            SemanticError(dec_line, "Redeclaration of Function");
+            SemanticError( cmm_line_no, "Redeclaration of Function");
         } else {
             // check if this function is only declared / already implemented
             if (res.first->second->dec_line != -1) { // already implemented
-                SemanticError(dec_line, "ReImplementation of Function");
+                SemanticError( cmm_line_no, "ReImplementation of Function");
             } else { // only declared
                 // check if api & scopes are similar:
                 if (!is_vectors_equal(*api, *res.first->second->api) ||
                     *scopes != *res.first->second->scopes) {
-                    SemanticError(dec_line,
+                    SemanticError( cmm_line_no,
                                   "Wrong API/Scopes for implementation of function");
                     // assuming SemanticError calls exit()
                 }

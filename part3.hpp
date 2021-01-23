@@ -134,7 +134,7 @@ public:
 
     map<string, Function*>* table;
 
-    void add_function(string &name, int dec_line, Type return_type, vector<Symbol*>* api, vector<int>* scopes);
+    void add_function(string &name, int dec_line, Type return_type, vector<Symbol*>* api, vector<int>* scopes, int cmm_line_no);
 
     void add_api(string &name, vector<Type> & api);
 
