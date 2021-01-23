@@ -4,21 +4,11 @@
 
 
 
-Commands::Commands(){}
-
 //FIXME move global variables to main
 
-Commands *commands = new Commands();
 
-FunctionTable* function_table = new FunctionTable();
 
-stack<SymbolTable*>* symbol_table_stack = new stack<SymbolTable*>();
 
-SymbolTable* currnet_sym_tbl = new SymbolTable();
-
-stack<int[2]>* reg_idx_stack = new stack<int[2]>();
-
-stack<int>* rtrn_vl_ofst_stk = new stack<int>();
 
 void Commands::backpatch(vector<int>* list, int address){
     for (vector<int>::iterator it = list->begin() ; it != list->end(); ++it){
@@ -214,6 +204,30 @@ Type SymbolTable::get_symbol_type(int call_line, string &name){
     return this->table->at(name)->type;
 }
 
+Line* makeLine(const char *type, const char *value) {
+
+    Line *p;
+
+    if ((p = (Line *) (malloc(sizeof(Line)))) == 0)
+        fprintf(stderr, "Failed malloc(struct node)\n");
+    else {
+        p->type = INT;
+        if (value != nullptr) {
+            p->value = strdup(value);
+        } else {
+            p->value = string();
+        }
+    }
+    p->reg = 0;
+    p->quad = 0;
+    p->truelist = new vector<int>();
+    p->falselist = new vector<int>();
+    p->nextlist = new vector<int>();
+    return (p);
+}
+
+
+
 /**************************************************************************/
 /*                           Main of parser                               */
 /**************************************************************************/
@@ -232,6 +246,16 @@ int main(int argc, char** argv){
 #if YYDEBUG
     yydebug=1;
 #endif
+
+    commands = new Commands();
+
+    function_table = new FunctionTable();
+
+    symbol_table_stack = new stack<SymbolTable*>();
+
+    current_sym_tbl = new SymbolTable();
+
+    in_scope = false;
 
     rc = yyparse();
     assert (rc == 0);  // Parsed successfully
@@ -274,29 +298,4 @@ int main(int argc, char** argv){
 
     file.close();
     return rc;
-}
-
-
-
-
-Line* makeLine(const char *type, const char *value){
-
-Line *p;
-
-if ((p = (Line *) (malloc(sizeof(Line)))) == 0)
-fprintf(stderr, "Failed malloc(struct node)\n");
-else {
-p->type = INT;
-if (value != nullptr) {
-p->value = strdup(value);
-} else {
-p->value = string();
-}
-}
-p->reg = 0;
-p->quad = 0;
-p->truelist = new vector<int>();
-p->falselist = new vector<int>();
-p->nextlist = new vector<int>();
-return (p);
 }

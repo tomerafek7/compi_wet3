@@ -162,22 +162,18 @@ extern stack<SymbolTable*>* symbol_table_stack;
 
 extern int RegisterIdx[2];
 
-extern stack<int[2]>* reg_idx_stack;
-
 extern SymbolTable* current_sym_tbl;
 
 extern FunctionTable* function_table;
 
-extern stack<int>* rtrn_vl_ofst_stk;
-
 extern vector<int>::iterator scopes_iter;
 
-vector<int>* scopes_api;
-vector<Symbol>* args_api;
-vector<int>* called_scopes;
-vector<Symbol>* called_args;
-int offset = -4;
-bool in_scope = false;
+extern vector<int>* scopes_api;
+extern vector<Symbol>* args_api;
+extern vector<int>* called_scopes;
+extern vector<Symbol>* called_args;
+extern int offset;
+extern bool in_scope;
 
 
 void SemanticError(int line_num, const char* error){
