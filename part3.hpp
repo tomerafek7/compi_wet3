@@ -169,15 +169,9 @@ extern vector<Symbol>* called_args;
 extern int offset;
 extern bool in_scope;
 
+void SemanticError(int line_num, const char* error);
 
-void SemanticError(int line_num, const char* error){
-    cerr << "Semantic error: <error description> in line number <line_number>";
-    exit(Semantic);
-
-}
-
-
-
+int main(int argc, char** argv);
 
 #define YYSTYPE Line*
 

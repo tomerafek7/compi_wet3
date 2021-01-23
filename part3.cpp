@@ -232,6 +232,11 @@ Line* makeLine(const char *type, const char *value) {
     return (p);
 }
 
+void SemanticError(int line_num, const char* error){
+    cerr << "Semantic error: <error description> in line number <line_number>";
+    exit(Semantic);
+
+}
 
 
 /**************************************************************************/
