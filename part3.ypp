@@ -69,6 +69,7 @@ FUNC_API:   TYPE id tk_lp
 				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
 				$$.value = $2.value;
 				$$.type = $1.type;
+				cout << $$.value << $$.value << endl;
 				offset = 0;
 				args_api = new vector<Symbol*>();
 				scopes_api = new vector<int>();
