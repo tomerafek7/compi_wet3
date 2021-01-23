@@ -543,11 +543,11 @@ CALL:   id tk_lp
             commands->emit("JLINK " + to_string(func_line));
             return_val_offset -= called_args->size() + func_scopes->size() + 4;
             for(int i = 0; i<RegisterIdx[INT];++i){
-                commands->emit("STORF F" + to_string(i) + "F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
+                commands->emit("STORF F" + to_string(i) + " F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
                 return_val_offset -= 4;
             }
             for(int i = 0; i<RegisterIdx[INT];++i){
-                commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
+                commands->emit("STORI I" + to_string(i) + " I2 " + to_string(return_val_offset));
                 return_val_offset -= 4;
             }
 			in_call = false;
@@ -605,7 +605,8 @@ CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
 
 N:
                 {
-                    $$.nextlist = commands->makelist(commands->nextquad()) ; commands->emit("UJUMP ");
+                    $$.nextlist = commands->makelist(commands->nextquad()) ;
+					commands->emit("UJUMP ");
                 };
 
 M:

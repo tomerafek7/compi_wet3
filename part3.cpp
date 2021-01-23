@@ -284,7 +284,6 @@ Type SymbolTable::get_symbol_type(int call_line, string &name){
 void SemanticError(int line_num, const char* error){
     cerr << "Semantic error: "<< error <<" in line number "<<line_num <<endl;
     exit(Semantic);
-
 }
 
 
