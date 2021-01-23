@@ -299,9 +299,9 @@ BEXP:   BEXP tk_or M BEXP     					                {
 		{
 			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands->.
 			if($1.type != $3.type){
-				SemanticError(yylineno,"Cannot Compare Expressions with different types");
 				cout << $1.type << " " << $1.reg << endl;
 				cout << $3.type << " " << $3.reg << endl;
+				SemanticError(yylineno,"Cannot Compare Expressions with different types");
 				exit(11);
 			}
 			// assuming SemanticError is exiting the program.
