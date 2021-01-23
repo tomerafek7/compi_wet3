@@ -249,7 +249,7 @@ extern int yyparse (void);
 
 int main(int argc, char* argv[]){
     int rc;
-    string arg_file = argv[0];
+    string arg_file = argv[1];
     string filename = arg_file.substr(0,arg_file.find_last_of('.'))+".rsk";
 
     ofstream file;
