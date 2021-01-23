@@ -39,6 +39,7 @@ vector<int>& Commands::merge(vector<int>& list_1, vector<int>& list_2){
 
 void Commands::emit(string command){
     command_list->push_back(command);
+    cout << command << endl;
 }
 
 int Commands::nextquad(){
