@@ -299,8 +299,10 @@ BEXP:   BEXP tk_or M BEXP     					                {
 		{
 			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands->.
 			if($1.type != $3.type){
-				cout << "ERRORRRRRR" << endl;
 				SemanticError(yylineno,"Cannot Compare Expressions with different types");
+				cout << $1.type << " " << $1.reg << endl;
+				cout << $3.type << " " << $3.reg << endl;
+				exit(11);
 			}
 			// assuming SemanticError is exiting the program.
 			Type type = $1.type; // they both have the same type
@@ -355,11 +357,11 @@ EXP:    EXP addop EXP
 				$$.type = FLOAT;
 				if($1.type == INT){ // first is integer
 					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($1.reg) + "F" + to_string(reg1));
+					commands->emit("CITOF I" + to_string($1.reg) + " F" + to_string(reg1));
 					reg2 = $3.reg;
 				} else{ // second is integer
 					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($3.reg) + "F" + to_string(reg2));
+					commands->emit("CITOF I" + to_string($3.reg) + " F" + to_string(reg2));
 					reg1 = $1.reg;
 				}
 			}
@@ -401,11 +403,11 @@ EXP:    EXP addop EXP
 				$$.type = FLOAT;
 				if($1.type == INT){ // first is integer
 					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($1.reg) + "F" + to_string(reg1));
+					commands->emit("CITOF I" + to_string($1.reg) + " F" + to_string(reg1));
 					reg2 = $3.reg;
 				} else{ // second is integer
 					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($3.reg) + "F" + to_string(reg2));
+					commands->emit("CITOF I" + to_string($3.reg) + " F" + to_string(reg2));
 					reg1 = $1.reg;
 				}
 			}
@@ -456,6 +458,7 @@ EXP:    EXP addop EXP
 		{ 
 			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
 			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
+			cout << $$.type << endl;
 			$$.reg = RegisterIdx[$$.type]++;
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){

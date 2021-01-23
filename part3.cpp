@@ -361,14 +361,6 @@ int main(int argc, char* argv[]){
         exit(Operational);
     }
 
-//    streambuf* oldCStreamBuf = cin.rdbuf();
-//    ostringstream strCout;
-//    cin.rdbuf( strCout.rdbuf() );
-
-#if YYDEBUG
-    yydebug=1;
-#endif
-
     yyin = fopen(argv[1], "r");
     rc = yyparse();
     assert (rc == 0);  // Parsed successfully
