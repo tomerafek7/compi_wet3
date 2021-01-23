@@ -19,9 +19,13 @@ int offset;
 bool in_scope = false;
 
 
+Commands::Commands(){
+    command_list = new vector<string>();
+}
+
 void Commands::backpatch(vector<int>& list, int address){
     for (vector<int>::iterator it = list.begin() ; it != list.end(); ++it){
-         command_list[*it] += to_string(address);
+         command_list->at(*it) += to_string(address);
     }
 }
 
@@ -34,11 +38,11 @@ vector<int>& Commands::merge(vector<int>& list_1, vector<int>& list_2){
 }
 
 void Commands::emit(string command){
-    command_list.push_back(command);
+    command_list->push_back(command);
 }
 
 int Commands::nextquad(){
-    return command_list.size();
+    return command_list->size();
 }
 
 vector<int>& Commands::makelist(int value){
@@ -119,7 +123,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
             table->at(name)->dec_line = dec_line;
             // 2. update the dec_line for all calls:
             for(auto it = table->at(name)->calls->begin(); it != scopes->end() ; ++it){
-                commands->command_list[*it] = "JLINK " + to_string(dec_line);
+                commands->command_list->at(*it) = "JLINK " + to_string(dec_line);
             }
         } else{ // already implemented
             SemanticError(dec_line, "ReImplementation of Function");
@@ -320,7 +324,7 @@ int main(int argc, char* argv[]){
     file << "</header>" << endl;
 
     // print assembly:
-    for(auto it = commands->command_list.begin(); it != commands->command_list.end(); ++it){
+    for(auto it = commands->command_list->begin(); it != commands->command_list->end(); ++it){
         file << *it << endl;
     }
 

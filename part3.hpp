@@ -50,9 +50,9 @@ Line* makeLine(const char *type, const char *value);
 
 class Commands {
 public:
-    vector<string> command_list;
+    vector<string>* command_list;
 
-    Commands() = default;
+    Commands();
 
     void backpatch(vector<int>& list, int address);
 
