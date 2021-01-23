@@ -12,9 +12,9 @@ SymbolTable* current_sym_tbl = new SymbolTable();
 FunctionTable* function_table = new FunctionTable();
 vector<int>::iterator scopes_iter;
 vector<int>* scopes_api;
-vector<Symbol>* args_api;
+vector<Symbol*>* args_api;
 vector<int>* called_scopes;
-vector<Symbol>* called_args;
+vector<Symbol*>* called_args;
 int offset;
 bool in_scope = false;
 
@@ -52,10 +52,10 @@ vector<int>& Commands::makelist(int value){
     return *res;
 }
 
-Function::Function(int dec_line, Type return_type, vector<Symbol> & api,
+Function::Function(int dec_line, Type return_type, vector<Symbol*> & api,
                     vector<int> & scopes, string name) : dec_line(dec_line), return_type(return_type), name(name)
 {
-    this->api = new vector<Symbol>(api);
+    this->api = new vector<Symbol*>(api);
     this->scopes = new vector<int>(scopes);
     this->calls = new vector<int>();
 }
@@ -65,7 +65,7 @@ Function::Function(Function *f){
     this->dec_line=f->dec_line;
     this->return_type = f->return_type;
     this->name = f->name;
-    this->api= new vector<Symbol>(*f->api);
+    this->api= new vector<Symbol*>(*f->api);
     this->scopes = new vector<int>(*f->scopes);
     this->calls = new vector<int>(*f->calls);
 }
@@ -96,8 +96,8 @@ FunctionTable::FunctionTable(){
 int FunctionTable::get_dec_line(string& name) {
     return this->table->at(name)->dec_line;
 }
-vector<Symbol>* FunctionTable::get_api(string& name){
-    return new vector<Symbol>(*this->table->at(name)->api);
+vector<Symbol*>* FunctionTable::get_api(string& name){
+    return new vector<Symbol*>(*this->table->at(name)->api);
 }
 
 vector<int>* FunctionTable::get_scope(string &name){
@@ -106,7 +106,7 @@ vector<int>* FunctionTable::get_scope(string &name){
 
 // dec_line = -1 if this is only a declaration.
 void FunctionTable::add_function(string &name, int dec_line, Type return_type,
-        vector<Symbol>* api, vector<int>* scopes){
+        vector<Symbol*>* api, vector<int>* scopes){
     std::pair<std::map<string,Function*>::iterator,bool> res;
     res = table->insert(std::pair<string, Function*>(name,
                            new Function(dec_line, return_type, *api, *scopes, name)));
@@ -142,7 +142,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
 //    table->at(name)->insertScopes(scopes);
 //}
 
-void FunctionTable::add_call(string &name, int call_line, vector<Symbol>* api, vector<int>* scopes){
+void FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes){
     // firstly, check that this function really declared
     if (!table->count(name)){
         SemanticError(call_line, "Function is not declared");
@@ -151,9 +151,9 @@ void FunctionTable::add_call(string &name, int call_line, vector<Symbol>* api, v
         SemanticError(call_line, "Function Symboluments: size mismatch");//FIXME
     }
     Function* curr_func  = this->table->at(name);
-    vector<Symbol> *called_func_api = curr_func->api;
-    for(vector<Symbol>::iterator it = api->begin(), iter = called_func_api->begin(); it != api->end() || iter != called_func_api->end() ; ++it){
-        if(it->type != iter->type){
+    vector<Symbol*> *called_func_api = curr_func->api;
+    for(vector<Symbol*>::iterator it = api->begin(), iter = called_func_api->begin(); it != api->end() || iter != called_func_api->end() ; ++it){
+        if((*it)->type != (*iter)->type){
             SemanticError(call_line, "Function Symboluments type mismatch");
         }
         ++iter;

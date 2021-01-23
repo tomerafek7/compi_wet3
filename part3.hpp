@@ -109,7 +109,7 @@ public:
 class Function{
 
 public:
-    Function(int dec_line, Type return_type, vector<Symbol> & api, vector<int> & scopes, string name);
+    Function(int dec_line, Type return_type, vector<Symbol*> & api, vector<int> & scopes, string name);
     Function(Function *f);
     // dec_line = -1 if this is only a declaration.
 //    Function(int dec_line, Type return_type);
@@ -118,7 +118,7 @@ public:
     int dec_line;
     vector<int>* calls;
     Type return_type;
-    vector<Symbol>* api;
+    vector<Symbol*>* api;
     vector<int>* scopes;
     string name;
     void add_call(int line);
@@ -134,17 +134,17 @@ public:
 
     map<string, Function*>* table;
 
-    void add_function(string &name, int dec_line, Type return_type, vector<Symbol>* api, vector<int>* scopes);
+    void add_function(string &name, int dec_line, Type return_type, vector<Symbol*>* api, vector<int>* scopes);
 
     void add_api(string &name, vector<Type> & api);
 
     void add_scopes(string &name, vector<int> & scopes);
 
-    vector<Symbol>* get_api(string& name);
+    vector<Symbol*>* get_api(string& name);
 
     vector<int>* get_scope(string &name);
 
-    void add_call(string &name, int call_line, vector<Symbol>* api, vector<int>* scopes);
+    void add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes);
 
     int get_dec_line(string& name);
 
@@ -163,9 +163,9 @@ extern SymbolTable* current_sym_tbl;
 extern FunctionTable* function_table;
 extern vector<int>::iterator scopes_iter;
 extern vector<int>* scopes_api;
-extern vector<Symbol>* args_api;
+extern vector<Symbol*>* args_api;
 extern vector<int>* called_scopes;
-extern vector<Symbol>* called_args;
+extern vector<Symbol*>* called_args;
 extern int offset;
 extern bool in_scope;
 
