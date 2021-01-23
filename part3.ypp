@@ -149,6 +149,9 @@ STMT:
         BLK         						                    {}  |
         tk_scope tk_lp integernum tk_rp
 		{
+			if(scopes_iter == scopes_api->end()){
+				SemanticError(yylineno, "starting a scope but there are no scopes defined in the declaration");
+			}
 			if (*scopes_iter != stoi($3.value)){
 				SemanticError(yylineno, "Scope isn't in function's scope list OR scopes are in wrong order");
 			}
@@ -555,10 +558,12 @@ ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
 SCOPES_LIST:    SCOPES_LIST tk_comma integernum
                 {
                     called_scopes->push_back(stoi($3.value));
+                    scopes_api->push_back(stoi($3.value));
                 }    |
                 integernum
                 {
                     called_scopes->push_back(stoi($1.value));
+                    scopes_api->push_back(stoi($1.value));
                 }    ;
 
 CALL_ARGS:  CALL_ARGLIST
