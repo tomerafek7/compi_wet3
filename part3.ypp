@@ -225,7 +225,7 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
 					        break;
 					}
 				} else{
-					commands->emit("PRNTC " + *str);
+					commands->emit("PRNTC ");
 				}
 					str++;
 			}
