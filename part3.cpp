@@ -43,7 +43,7 @@ void Commands::emit(string command){
 }
 
 int Commands::nextquad(){
-    return command_list->size();
+    return command_list->size() + 1;
 }
 
 vector<int>& Commands::makelist(int value){
@@ -385,7 +385,12 @@ int main(int argc, char* argv[]){
     for(auto it = implemented->begin(); it != implemented->end(); ++it){
         file << it->name << ",[";
         for(auto s_it = it->scopes->begin(); s_it != it->scopes->end(); ++s_it){
-            file << to_string(*s_it) << ";";
+            if(s_it != prev(it->scopes->end())){
+                file << to_string(*s_it) << ";";
+            } else{
+                file << to_string(*s_it);
+            }
+
         }
         file << "]," << to_string(it->dec_line);
         file << " ";
