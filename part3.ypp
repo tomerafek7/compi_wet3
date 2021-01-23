@@ -40,7 +40,6 @@ PROGRAM:    FDEFS   						                    {}  ;
 FDEFS:      FDEFS FUNC_API
 			{
 				// definition - pass dec_line = nextquad
-				cout << $2.value << " " << $2.type << endl;
 				function_table->add_function($2.value, commands->nextquad(), $2.type, args_api, scopes_api,yylineno);
 				offset = 4;
 				scopes_iter = scopes_api->begin();
@@ -62,18 +61,13 @@ FDEFS:      FDEFS FUNC_API
 			
 FUNC_API:   TYPE id tk_lp
 			{
-				cout << $1.value << $2.value << endl;
 				symbol_table_stack->push(current_sym_tbl);
 				current_sym_tbl = new SymbolTable();
 				RegisterIdx[INT] = INIT_REG_INT;
 				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
-				$$.value = $2.value;
-				$$.type = $1.type;
-				cout << $$.type << " " << $$.value << endl;
 				offset = 0;
 				args_api = new vector<Symbol*>();
 				scopes_api = new vector<int>();
-				cout << "init vectors" << endl;
 			}
 			FUNC_ARGS tk_rp SCOPES_API
 			{
@@ -95,18 +89,14 @@ FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
 				}
 				DCL
 				{
-					cout << "trying to push to vector args_api" << endl;
 					args_api->push_back(new Symbol($3.type, $3.value));
-					cout << "pushed to vector args_api" << endl;
 				}	|
 				{
 					offset -= 4; // going down the stack for each argument
 				}
               	DCL
 				{
-					cout << "trying to push to vector args_api" << endl;
 					args_api->push_back(new Symbol($1.type, $1.value));
-					cout << "pushed to vector args_api" << endl;
 				};
               
 BLK: 	'{'
@@ -517,11 +507,11 @@ CALL:   id tk_lp
             commands->emit("CITOF F" + to_string(stack_ptr_float) + "I2");
             for(int i=0; i < RegisterIdx[INT]; ++i){
                 return_val_offset += 4;
-                commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
+                commands->emit("STORI I" + to_string(i) + " I2 " + to_string(return_val_offset));
             }
             for(int i=0; i < RegisterIdx[FLOAT];++i){
                 return_val_offset += 4;
-                commands->emit("STORF F" + to_string(i) + "F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
+                commands->emit("STORF F" + to_string(i) + " F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
             }
             commands->emit("COPYI I3 0");
             commands->emit("COPYI I4 1");
@@ -538,9 +528,9 @@ CALL:   id tk_lp
             for(vector<Symbol*>::reverse_iterator it = called_args->rbegin(); it != called_args->rend(); ++it){
                 return_val_offset += 4;
                 if((*it)->type == FLOAT){
-                    commands->emit("STORF F" + to_string((*it)->reg) + "F2 " + to_string(return_val_offset));
+                    commands->emit("STORF F" + to_string((*it)->reg) + " F2 " + to_string(return_val_offset));
                 } else {
-                    commands->emit("STORI I" + to_string((*it)->reg) + "I2 " + to_string(return_val_offset));
+                    commands->emit("STORI I" + to_string((*it)->reg) + " I2 " + to_string(return_val_offset));
                 }
             }
 			//Saving place for function return value
