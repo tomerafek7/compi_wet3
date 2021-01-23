@@ -84,7 +84,9 @@ void Function::add_call(int line) {
     this->calls->push_back(line);
 }
 
-
+FunctionTable::FunctionTable(){
+    table = new map<string, Function*>();
+}
 
 int FunctionTable::get_dec_line(string& name) {
     return this->table->at(name)->dec_line;
@@ -190,11 +192,14 @@ Symbol::Symbol(Type type, string &name) :  type(type), name(name){}
 
 Symbol::Symbol(Type type, int reg) :  type(type), reg(reg){}
 
+SymbolTable::SymbolTable(){
+    table = new map<string,Symbol*>();
+}
 
 void SymbolTable::add_symbol(int call_line, string &name, int offset, Type type){
     std::pair<std::map<string,Symbol*>::iterator,bool> res;
-    res = table->insert(std::pair<string, Symbol*>(name,new Symbol(offset, type, name)));
-    if (!res.second) { // there's already a function with this name
+    res = table->insert(std::make_pair(name,new Symbol(offset, type, name)));
+    if (!res.second) { // there's already a variable with this name
         SemanticError(call_line, "Redeclaration of Variable");
     }
 
@@ -246,6 +251,18 @@ void SemanticError(int line_num, const char* error){
 /*                           Main of parser                               */
 /**************************************************************************/
 extern int yyparse (void);
+
+//int main(){
+//    string mystr = "abc";
+////    SymbolTable* sym_tbl = new SymbolTable();
+//    current_sym_tbl->add_symbol(30,mystr,1,INT);
+//    map<string,Symbol> my_map = map<string,Symbol>();
+////    auto res = my_map.insert(make_pair(mystr,Symbol(1,INT,mystr)));
+////    printf("%d\n", (int)res.second);
+////    printf("%d",(int)my_map.count(mystr));
+//
+//
+//}
 
 int main(int argc, char* argv[]){
     int rc;

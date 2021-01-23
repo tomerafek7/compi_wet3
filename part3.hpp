@@ -97,7 +97,7 @@ class SymbolTable{
 public:
     map<string,Symbol*> *table;
 
-    SymbolTable() = default;
+    SymbolTable();
 
     void add_symbol(int call_line, string &name, int offset, Type type);
     int get_symbol_offset(int call_line, string &name);
@@ -130,7 +130,7 @@ class FunctionTable{
 
 public:
 
-    FunctionTable() = default;
+    FunctionTable();
 
     map<string, Function*>* table;
 
