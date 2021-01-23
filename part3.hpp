@@ -62,7 +62,7 @@ public:
 
     int nextquad();
 
-    vector<int>* makelist(int value);
+    vector<int>& makelist(int value);
 
 };
 

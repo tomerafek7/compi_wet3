@@ -41,10 +41,10 @@ int Commands::nextquad(){
     return command_list.size();
 }
 
-vector<int>* Commands::makelist(int value){
+vector<int>& Commands::makelist(int value){
     vector<int> *res = new vector<int>();
     res->push_back(value);
-    return res;
+    return *res;
 }
 
 Function::Function(int dec_line, Type return_type, vector<Symbol> & api,
