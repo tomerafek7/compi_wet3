@@ -517,9 +517,9 @@ CALL:   id tk_lp
                     commands->emit("STORI I3 I2 "+ to_string(return_val_offset));
                 }
             }
-            for(vector<Symbol>::reverse_iterator it = called_args->rbegin(); it != called_args->rend(); ++it){
+            for(vector<Symbol*>::reverse_iterator it = called_args->rbegin(); it != called_args->rend(); ++it){
                 return_val_offset += 4;
-                if(it->type == FLOAT){
+                if((*it)->type == FLOAT){
                     commands->emit("STORF F" + to_string(it->reg) + "F2 " + to_string(return_val_offset));
                 } else {
                     commands->emit("STORI I" + to_string(it->reg) + "I2 " + to_string(return_val_offset));
