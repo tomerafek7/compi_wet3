@@ -250,13 +250,13 @@ void SymbolTable::add_symbol(int call_line, string &name, int offset, Type type)
 int SymbolTable::get_symbol_offset(int call_line, string &name){
 
     if (!table->count(name)){
-        SemanticError(call_line, "Function is not declared");
+        SemanticError(call_line, "Variable is not declared");
     }
     return this->table->at(name)->offset;
 }
 Type SymbolTable::get_symbol_type(int call_line, string &name){
     if (!table->count(name)){
-        SemanticError(call_line, "Function is not declared");
+        SemanticError(call_line, "Variable is not declared");
     }
     return this->table->at(name)->type;
 }
