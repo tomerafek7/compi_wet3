@@ -295,35 +295,29 @@ void SemanticError(int line_num, const char* error){
 /**************************************************************************/
 extern int yyparse (void);
 
-/*int main(){
-//    string mystr = "abc";
-////////    SymbolTable* sym_tbl = new SymbolTable();
-//////    current_sym_tbl->add_symbol(30,mystr,1,INT);
-//////    map<string,Symbol> my_map = map<string,Symbol>();
-////////    auto res = my_map.insert(make_pair(mystr,Symbol(1,INT,mystr)));
-////////    printf("%d\n", (int)res.second);
-////////    printf("%d",(int)my_map.count(mystr));
-//
-//    auto args = new vector<Symbol*>();
-//    auto scopes = new vector<int>();
-//    args->push_back(new Symbol(30,INT,mystr));
-//    args->push_back(new Symbol(30,INT,mystr));
-//    args->push_back(new Symbol(30,INT,mystr));
-//    scopes->push_back(2);
-//    scopes->push_back(10);
-//    scopes->push_back(100);
-//    function_table->add_function(mystr,-1,INT,args,scopes);
-//    args->pop_back();
-//    args->push_back(new Symbol(30,FLOAT,mystr));
-//    function_table->add_call(mystr,0,args,scopes);
-//    commands->emit("JLINK -1");
-//    function_table->add_call(mystr,1,args,scopes);
-//    commands->emit("JLINK -1");
-//    function_table->add_call(mystr,2,args,scopes);
-//    commands->emit("JLINK -1");
-//    function_table->add_call(mystr,3,args,scopes);
-//    commands->emit("JLINK -1");
-//    function_table->add_function(mystr,10,INT,args,scopes);
+int main(){
+    /*
+    string mystr = "abc";
+    auto args = new vector<Symbol*>();
+    auto scopes = new vector<int>();
+    args->push_back(new Symbol(30,INT,mystr));
+    args->push_back(new Symbol(30,INT,mystr));
+    args->push_back(new Symbol(30,INT,mystr));
+    scopes->push_back(2);
+    scopes->push_back(10);
+    scopes->push_back(100);
+    function_table->add_function(mystr,-1,INT,args,scopes);
+    args->pop_back();
+    args->push_back(new Symbol(30,FLOAT,mystr));
+    function_table->add_call(mystr,0,args,scopes);
+    commands->emit("JLINK -1");
+    function_table->add_call(mystr,1,args,scopes);
+    commands->emit("JLINK -1");
+    function_table->add_call(mystr,2,args,scopes);
+    commands->emit("JLINK -1");
+    function_table->add_call(mystr,3,args,scopes);
+    commands->emit("JLINK -1");
+    function_table->add_function(mystr,10,INT,args,scopes);
 
     vector<int>* l1 = new vector<int>();
     for(int i=0;i<4;i++){
@@ -338,10 +332,24 @@ extern int yyparse (void);
 
     auto l4 = commands->makelist(5);
     cout << "";
+    */
+    string str = "x";
+    current_sym_tbl->add_symbol(1,str,-4,INT);
+    current_sym_tbl->get_symbol_offset(2,str);
+    current_sym_tbl->get_symbol_type(2,str);
+    symbol_table_stack->push(current_sym_tbl);
+    current_sym_tbl = new SymbolTable();
+    string str2 = "xy";
+    current_sym_tbl->add_symbol(3,str2,-8,FLOAT);
+    current_sym_tbl->get_symbol_offset(4,str2);
+    current_sym_tbl->get_symbol_type(5,str2);
+    current_sym_tbl = symbol_table_stack->top();
+    symbol_table_stack->pop();
+    current_sym_tbl->get_symbol_offset(2,str);
+    current_sym_tbl->get_symbol_type(2,str);
+}
 
-}*/
-
-int main(int argc, char* argv[]){
+/*int main(int argc, char* argv[]){
     int rc;
     string arg_file = argv[1];
     string filename = arg_file.substr(0,arg_file.find_last_of('.'))+".rsk";
@@ -403,4 +411,4 @@ int main(int argc, char* argv[]){
 
     file.close();
     return rc;
-}
+}*/
