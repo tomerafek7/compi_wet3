@@ -69,7 +69,6 @@ FUNC_API:   TYPE id tk_lp
 				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
 				$$.value = $2.value;
 				$$.type = $1.type;
-				$2.value = "abc";
 				cout << $$.type << " " << $$.value << endl;
 				offset = 0;
 				args_api = new vector<Symbol*>();
@@ -77,6 +76,10 @@ FUNC_API:   TYPE id tk_lp
 				cout << "init vectors" << endl;
 			}
 			FUNC_ARGS tk_rp SCOPES_API
+			{
+				$$.value = $2.value;
+				$$.type = $1.type;
+			}
 			;
                                                                 
 
