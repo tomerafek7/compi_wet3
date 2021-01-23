@@ -173,6 +173,6 @@ void SemanticError(int line_num, const char* error);
 
 //int main(int argc, char** argv);
 
-#define YYSTYPE Line*
+#define YYSTYPE Line
 
 #endif //COMMON_H

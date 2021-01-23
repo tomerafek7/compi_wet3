@@ -38,7 +38,7 @@ PROGRAM:    FDEFS   						                    {}  ;
 FDEFS:      FDEFS FUNC_API
 			{
 				// definition - pass dec_line = nextquad
-				function_table->add_function($2->value, commands->nextquad(), $2->type, args_api, scopes_api);
+				function_table->add_function($2.value, commands->nextquad(), $2.type, args_api, scopes_api);
 				symbol_table_stack->push(current_sym_tbl);
 				current_sym_tbl = new SymbolTable();
 				RegisterIdx[INT] = INIT_REG_INT;
@@ -56,15 +56,15 @@ FDEFS:      FDEFS FUNC_API
 
             FDEFS FUNC_API ';'  				                
 			{   // declaration - pass dec_line = - 1
-				function_table->add_function($2->value, -1, $2->type, args_api, scopes_api);
+				function_table->add_function($2.value, -1, $2.type, args_api, scopes_api);
 			}	|
 			// epsilon - do nothing
             ;
 			
 FUNC_API:   TYPE id tk_lp
 			{
-				$$->value = $2->value;
-				$$->type = $1->type;
+				$$.value = $2.value;
+				$$.type = $1.type;
 				offset = 0;
 				args_api = new vector<Symbol>();
 				scopes_api = new vector<int>();
@@ -85,14 +85,14 @@ FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
 				}
 				DCL
 				{
-					args_api->push_back(*(new Symbol($3->type, $3->value)));
+					args_api->push_back(*(new Symbol($3.type, $3.value)));
 				}	|
 				{
 					offset -= 4; // going down the stack for each argument
 				}
               	DCL
 				{
-					args_api->push_back(*(new Symbol($1->type, $1->value)));
+					args_api->push_back(*(new Symbol($1.type, $1.value)));
 				};
               
 BLK: 	'{'
@@ -109,20 +109,20 @@ BLK: 	'{'
 		}	;
 
 DCL:    id ':' TYPE                 				            {
-																current_sym_tbl->add_symbol(yylineno, $1->value, offset, $3->type);
-                                                                $$->type = $3->type;
-																$$->value = $1->value;
+																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
+                                                                $$.type = $3.type;
+																$$.value = $1.value;
                                                                 }    |
 																
         id tk_comma DCL             				            {
-																current_sym_tbl->add_symbol(yylineno, $1->value, offset, $3->type);
-																$$->type = $3->type;
-																$$->value = $1->value;
+																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
+																$$.type = $3.type;
+																$$.value = $1.value;
                                     				            }    ;
                                     
-TYPE:   tk_int     						                        { $$->type = INT; }		|
-        tk_float   						                        { $$->type = FLOAT; }    |
-        tk_void    						                        { $$->type = VOID; }	    ;
+TYPE:   tk_int     						                        { $$.type = INT; }		|
+        tk_float   						                        { $$.type = FLOAT; }    |
+        tk_void    						                        { $$.type = VOID; }	    ;
         
 STLIST: STLIST STMT 						                    |
                                                                 ; // epsilon
@@ -144,7 +144,7 @@ STMT:
         BLK         						                    {}  |
         tk_scope tk_lp integernum tk_rp
 		{
-			if (*scopes_iter != stoi($3->value)){
+			if (*scopes_iter != stoi($3.value)){
 				SemanticError(yylineno, "Scope isn't in function's scope list OR scopes are in wrong order");
 			}
 			if(in_scope){
@@ -155,27 +155,27 @@ STMT:
 			int reg = RegisterIdx[INT]++;
 			int offset = -4 * (1 + args_api->size() + distance(scopes_api->begin(), scopes_iter)); // we want to skip all Args + all scopes that before this one. distance func gives us the index of an element in vector.
 			commands->emit("LOADI I" + to_string(reg) + " I1 " + to_string(offset));
-			$$->nextlist = commands->makelist(commands->nextquad());
+			$$.nextlist = commands->makelist(commands->nextquad());
 			commands->emit("BREQZ I" + to_string(reg) + " "); // backpatching is needed
 			scopes_iter++;
 
 		}  BLK
 		{
 			in_scope = false;
-			commands->backpatch($$->nextlist, commands->nextquad()); // backpatch the needed backpatching above
+			commands->backpatch($$.nextlist, commands->nextquad()); // backpatch the needed backpatching above
 		};
 
         
 RETURN: tk_return EXP ';'
 		{
-			string op_type = ($3->type == INT) ? "I" : "F";
+			string op_type = ($3.type == INT) ? "I" : "F";
 			int addr_reg_i = RegisterIdx[FLOAT]++;
-			if ($3->type == FLOAT){ // float - casting is needed
+			if ($3.type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
 				commands->emit("CITOF F" + to_string(addr_reg_f) + " I1"); // cast I1 to a float register
-				commands->emit("STORF F" + to_string($3->reg) + " F" + to_string(addr_reg_f) + " 0"); // writing the value to address stored in I1.
+				commands->emit("STORF F" + to_string($3.reg) + " F" + to_string(addr_reg_f) + " 0"); // writing the value to address stored in I1.
 			} else{ // integer - no casting is needed
-				commands->emit("STORI I" + to_string($3->reg) + " I1 " + "0"); // writing the value to address stored in I1.
+				commands->emit("STORI I" + to_string($3.reg) + " I1 " + "0"); // writing the value to address stored in I1.
 			}
 			// at last, reset stack (I2)  + return command
 			commands->emit("COPYI I2 I1");
@@ -192,14 +192,14 @@ RETURN: tk_return EXP ';'
         
 WRITE:  tk_write tk_lp EXP tk_rp ';'
 		{
-			string op_type = ($3->type == INT) ? "I" : "F";
-			commands->emit("PRNT" + op_type + " " + op_type + to_string($3->reg));
+			string op_type = ($3.type == INT) ? "I" : "F";
+			commands->emit("PRNT" + op_type + " " + op_type + to_string($3.reg));
 		}	|
 
         tk_write tk_lp str tk_rp ';'
 		{
-			char *str = new char[$3->value.length() + 1];
-			strcpy(str, $3->value.c_str());
+			char *str = new char[$3.value.length() + 1];
+			strcpy(str, $3.value.c_str());
 			while(*str){
 				if(*str == '\\'){ // the first \ is for escaped..
 					str++;
@@ -223,149 +223,149 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
         
 READ:   tk_read tk_lp LVAL tk_rp ';'
 		{
-			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1->value);
-			$$->type = current_sym_tbl->get_symbol_type(yylineno, $1->value);
-			$$->reg = RegisterIdx[$$->type]++;
+			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
+			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
+			$$.reg = RegisterIdx[$$.type]++;
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
 				commands->emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
 			} else{ // offset <= 0
 				commands->emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
-			string op_type = ($3->type == INT) ? "I" : "F";
-			commands->emit("READ" + op_type + " " + op_type + to_string($$->reg));
-			commands->emit("STOR" + op_type + " " + op_type + to_string($$->reg) + " " + op_type + to_string(addr_reg_i) + " 0");
+			string op_type = ($3.type == INT) ? "I" : "F";
+			commands->emit("READ" + op_type + " " + op_type + to_string($$.reg));
+			commands->emit("STOR" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string(addr_reg_i) + " 0");
 		}	|
         
 ASSN:   LVAL tk_assign EXP ';'
 	{
-		Type type = current_sym_tbl->get_symbol_type(yylineno, $1->value);
-		if(type != $3->type){
+		Type type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
+		if(type != $3.type){
 			SemanticError(yylineno, "Assignment failed - different types");
 		}
-		int offset = current_sym_tbl->get_symbol_offset(yylineno, $1->value);
+		int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
 		string op_type = (type == INT) ? "I" : "F";
-		commands->emit("STOR" + op_type + " " + op_type + to_string($3->reg) + " I2 " + to_string(offset));
+		commands->emit("STOR" + op_type + " " + op_type + to_string($3.reg) + " I2 " + to_string(offset));
     };
         
-LVAL:   id                                                  	{ $$->value = $1->value; };
+LVAL:   id                                                  	{ $$.value = $1.value; };
 	
 CNTRL:  tk_if BEXP tk_then M STMT N tk_else M STMT          	{
-                                                            	commands->backpatch($2->truelist , $4->quad) ;
-                                                            	commands->backpatch($2->falselist , $8->quad) ;
-                                                            	$$->nextlist = commands->merge($5->nextlist, commands->merge($7->nextlist, $9->nextlist));
+                                                            	commands->backpatch($2.truelist , $4.quad) ;
+                                                            	commands->backpatch($2.falselist , $8.quad) ;
+                                                            	$$.nextlist = commands->merge($5.nextlist, commands->merge($7.nextlist, $9.nextlist));
                                                             	}   |
 
         tk_if BEXP tk_then M STMT                           	{
-                                                            	commands->backpatch($2->truelist , $4->quad ) ;
-                                                            	$$->nextlist = commands->merge ( $2->falselist, $5->nextlist );
+                                                            	commands->backpatch($2.truelist , $4.quad ) ;
+                                                            	$$.nextlist = commands->merge ( $2.falselist, $5.nextlist );
                                                             	}    |
                                                                                                         
         tk_while M BEXP tk_do M STMT                        	{
-                                                            	commands->backpatch($6->nextlist, $2->quad) ;
-                                                            	commands->backpatch($3->truelist , $5->quad);
-                                                            	$$->nextlist = $3->falselist ;
-                                                            	commands->emit("UJUMP " + $2->quad);
+                                                            	commands->backpatch($6.nextlist, $2.quad) ;
+                                                            	commands->backpatch($3.truelist , $5.quad);
+                                                            	$$.nextlist = $3.falselist ;
+                                                            	commands->emit("UJUMP " + $2.quad);
 																};
 
 BEXP:   BEXP tk_or M BEXP     					                {
-																commands->backpatch($1->falselist, $3->quad);
-																$$->truelist = commands->merge($1->truelist, $4->truelist);
-																$$->falselist = $4->falselist ;
+																commands->backpatch($1.falselist, $3.quad);
+																$$.truelist = commands->merge($1.truelist, $4.truelist);
+																$$.falselist = $4.falselist ;
 																}  |
     	BEXP tk_and M BEXP    					                {
-																commands->backpatch($1->truelist, $3->quad);
-																$$->falselist = commands->merge($1->truelist, $4->truelist);
-																$$->truelist = $4->falselist ;
+																commands->backpatch($1.truelist, $3.quad);
+																$$.falselist = commands->merge($1.truelist, $4.truelist);
+																$$.truelist = $4.falselist ;
 																}  |
 
     	tk_not BEXP         					                {
-                                                                $$->truelist = $2->falselist ;
-																$$->falselist = $2->truelist ;
+                                                                $$.truelist = $2.falselist ;
+																$$.falselist = $2.truelist ;
                                                                 }  |
 
     	EXP relop EXP
 		{
-			$$->truelist = commands->makelist(commands->nextquad() + 1); // there are two commands->.
-			if($1->type != $3->type){
+			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands->.
+			if($1.type != $3.type){
 				SemanticError(yylineno,"Cannot Compare Expressions with different types");
 			}
 			// assuming SemanticError is exiting the program.
-			Type type = $1->type; // they both have the same type
+			Type type = $1.type; // they both have the same type
 			string op_type = (type == INT) ? "I" : "F";
 			int reg = RegisterIdx[type]++;
-			if($2->value == "=="){
-				commands->emit("SEQU" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+			if($2.value == "=="){
+				commands->emit("SEQU" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
 				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
-			} else if($2->value == "<>"){
-				commands->emit("SNEQ" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+			} else if($2.value == "<>"){
+				commands->emit("SNEQ" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
 				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
-			} else if($2->value == "<"){
-				commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+			} else if($2.value == "<"){
+				commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
 				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
-			} else if($2->value == ">"){
-				commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+			} else if($2.value == ">"){
+				commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
 				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
-			} else if($2->value == "<="){
-				commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+			} else if($2.value == "<="){
+				commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
 				commands->emit("BREQZ " + op_type + to_string(reg) + " ");
 			} else{ // >=
-				commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1->reg) + " " + op_type + to_string($3->reg));
+				commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
 				commands->emit("BREQZ " + op_type + to_string(reg) + " ");
 			}
 
-			$$->falselist = commands->makelist(commands->nextquad());
+			$$.falselist = commands->makelist(commands->nextquad());
 			commands->emit("UJUMP ");
 
 		}  |
 
     	tk_lp BEXP tk_rp        				                {
-                                                                $$->truelist = $2->truelist ;
-																$$->falselist = $2->falselist ;
+                                                                $$.truelist = $2.truelist ;
+																$$.falselist = $2.falselist ;
 																} ;
         
 EXP:    EXP addop EXP       					                
 		{
 			int reg1, reg2;
 			// both are integers:
-			if($1->type == INT && $3->type == INT){
-				$$->type = INT;
-				reg1 = $1->reg;
-				reg2 = $3->reg;
+			if($1.type == INT && $3.type == INT){
+				$$.type = INT;
+				reg1 = $1.reg;
+				reg2 = $3.reg;
 				// no casting is needed
 			// both are floats:
-			} else if($1->type == FLOAT && $3->type == FLOAT){
-				$$->type = FLOAT;
-				reg1 = $1->reg;
-				reg2 = $3->reg;
+			} else if($1.type == FLOAT && $3.type == FLOAT){
+				$$.type = FLOAT;
+				reg1 = $1.reg;
+				reg2 = $3.reg;
 				// no casting is needed
 			} else{ // one is integer and the other is float
-				$$->type = FLOAT;
-				if($1->type == INT){ // first is integer
+				$$.type = FLOAT;
+				if($1.type == INT){ // first is integer
 					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($1->reg) + "F" + to_string(reg1));
-					reg2 = $3->reg;
+					commands->emit("CITOF I" + to_string($1.reg) + "F" + to_string(reg1));
+					reg2 = $3.reg;
 				} else{ // second is integer
 					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($3->reg) + "F" + to_string(reg2));
-					reg1 = $1->reg;
+					commands->emit("CITOF I" + to_string($3.reg) + "F" + to_string(reg2));
+					reg1 = $1.reg;
 				}
 			}
 			
 			// allocate register for parent
-			$$->reg = RegisterIdx[$$->type]++;
+			$$.reg = RegisterIdx[$$.type]++;
 			// different operation kind based on type:
 			string op_type;
-			if($$->type == INT){
+			if($$.type == INT){
 				op_type = "I";
 			} else{
 				op_type = "F";
 			}
 			
-			if($2->value == "+"){ // addition
-				commands->emit("ADD2" + op_type + " " + op_type + to_string($$->reg) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+			if($2.value == "+"){ // addition
+				commands->emit("ADD2" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
 			} else{ // subtraction
-				commands->emit("SUBT" + op_type + " " + op_type + to_string($$->reg) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+				commands->emit("SUBT" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
 			}
 				
 		}	|
@@ -374,113 +374,113 @@ EXP:    EXP addop EXP
 		{
 			int reg1, reg2;
 			// both are integers:
-			if($1->type == INT && $3->type == INT){
-				$$->type = INT;
-				reg1 = $1->reg;
-				reg2 = $3->reg;
+			if($1.type == INT && $3.type == INT){
+				$$.type = INT;
+				reg1 = $1.reg;
+				reg2 = $3.reg;
 				// no casting is needed
 			// both are floats:
-			} else if($1->type == FLOAT && $3->type == FLOAT){
-				$$->type = FLOAT;
-				reg1 = $1->reg;
-				reg2 = $3->reg;
+			} else if($1.type == FLOAT && $3.type == FLOAT){
+				$$.type = FLOAT;
+				reg1 = $1.reg;
+				reg2 = $3.reg;
 				// no casting is needed
 			} else{ // one is integer and the other is float
-				$$->type = FLOAT;
-				if($1->type == INT){ // first is integer
+				$$.type = FLOAT;
+				if($1.type == INT){ // first is integer
 					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($1->reg) + "F" + to_string(reg1));
-					reg2 = $3->reg;
+					commands->emit("CITOF I" + to_string($1.reg) + "F" + to_string(reg1));
+					reg2 = $3.reg;
 				} else{ // second is integer
 					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($3->reg) + "F" + to_string(reg2));
-					reg1 = $1->reg;
+					commands->emit("CITOF I" + to_string($3.reg) + "F" + to_string(reg2));
+					reg1 = $1.reg;
 				}
 			}
 			
 			// allocate register for parent
-			$$->reg = RegisterIdx[$$->type]++;
+			$$.reg = RegisterIdx[$$.type]++;
 			// different operation kind based on type:
-			string op_type = ($$->type == INT) ? "I" : "F";
+			string op_type = ($$.type == INT) ? "I" : "F";
 			
-			if($2->value == "*"){ // multiplication
-				commands->emit("MULT" + op_type + " " + op_type + to_string($$->reg) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+			if($2.value == "*"){ // multiplication
+				commands->emit("MULT" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
 			} else{ // division
-				commands->emit("DIVD" + op_type + " " + op_type + to_string($$->reg) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
+				commands->emit("DIVD" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string(reg1) + " " + op_type + to_string(reg2));
 			}
 	
 		}  |
 
         tk_lp EXP tk_rp         				                
 		{
-			$$->type = $2->type;
-			$$->reg = $2->reg;
+			$$.type = $2.type;
+			$$.reg = $2.reg;
 			
         }  |
 
         tk_lp TYPE tk_rp EXP    				                
 		{
-			$$->type = $2->type;
-			$$->reg = RegisterIdx[$$->type]++;
-			string op_type = ($$->type == INT) ? "I" : "F";
-			commands->emit("COPY" + op_type + " " + op_type + to_string($$->reg) + " " + op_type + to_string($4->reg));
+			$$.type = $2.type;
+			$$.reg = RegisterIdx[$$.type]++;
+			string op_type = ($$.type == INT) ? "I" : "F";
+			commands->emit("COPY" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string($4.reg));
 		}  |
 
         id              					                    
 		{ 
-			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1->value);
-			$$->type = current_sym_tbl->get_symbol_type(yylineno, $1->value);
-			$$->reg = RegisterIdx[$$->type]++;
+			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
+			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
+			$$.reg = RegisterIdx[$$.type]++;
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
 				commands->emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
 			} else{ // offset <= 0
 				commands->emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
 			}
-			if ($$->type == FLOAT){ // float - casting is needed
+			if ($$.type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
 				commands->emit("CITOF F" + to_string(addr_reg_f) + " I" + to_string(addr_reg_i));
-				commands->emit("LOADF F" + to_string($$->reg) + " F" + to_string(addr_reg_f) + " 0");
+				commands->emit("LOADF F" + to_string($$.reg) + " F" + to_string(addr_reg_f) + " 0");
 			} else{ // integer - no casting is needed
-				commands->emit("LOADI I" + to_string($$->reg) + " I" + to_string(addr_reg_i) + " 0");
+				commands->emit("LOADI I" + to_string($$.reg) + " I" + to_string(addr_reg_i) + " 0");
 			}
 
 		}	|
 
         NUM
 		{
-			$$->type = $1->type;
-			$$->value = $1->value;
-			$$->reg = RegisterIdx[$$->type]++;
-			string op_type = ($$->type == INT) ? "I" : "F";
-			commands->emit("COPY" + op_type + " " + op_type + to_string($$->reg) + " " + $$->value);
+			$$.type = $1.type;
+			$$.value = $1.value;
+			$$.reg = RegisterIdx[$$.type]++;
+			string op_type = ($$.type == INT) ? "I" : "F";
+			commands->emit("COPY" + op_type + " " + op_type + to_string($$.reg) + " " + $$.value);
 		}    |
 
         CALL
 		{
 			// FIXME: change to I2 + offset
-			$$->type = $1->type;
-			$$->reg = RegisterIdx[$$->type]++;
-			if ($$->type == FLOAT){ // float - casting is needed
+			$$.type = $1.type;
+			$$.reg = RegisterIdx[$$.type]++;
+			if ($$.type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
 				commands->emit("CITOF F" + to_string(addr_reg_f) + " I1"); // assuming the function output is at I1 + 0
-				commands->emit("LOADF F" + to_string($$->reg) + " F" + to_string(addr_reg_f) + " 0");
+				commands->emit("LOADF F" + to_string($$.reg) + " F" + to_string(addr_reg_f) + " 0");
 			} else{ // integer - no casting is needed
-				commands->emit("LOADI I" + to_string($$->reg) + " I1 " + "0");
+				commands->emit("LOADI I" + to_string($$.reg) + " I1 " + "0");
 			}
 		}    ;
 
         
 NUM:    integernum 						                        
 		{ 
-			$$->type = INT;
-			$$->value = $1->value;
+			$$.type = INT;
+			$$.value = $1.value;
 		}  |
 
         realnum    						                        
 		{ 
-			$$->type = FLOAT;
-			$$->value = $1->value;
+			$$.type = FLOAT;
+			$$.value = $1.value;
 		}  ;
         
 CALL:   id tk_lp
@@ -507,7 +507,7 @@ CALL:   id tk_lp
             }
             commands->emit("COPYI I3 0");
             commands->emit("COPYI I4 1");
-            vector<int>* func_scopes = function_table->get_scope($1->value);
+            vector<int>* func_scopes = function_table->get_scope($1.value);
             for(vector<int>::reverse_iterator it = func_scopes->rbegin(); it != func_scopes->rend(); ++it){
                 if(find(called_scopes->begin(), called_scopes->end(), *it) != called_scopes->end()){
                     return_val_offset += 4;
@@ -528,9 +528,9 @@ CALL:   id tk_lp
             return_val_offset += 4;
             commands->emit("ADD2I I2 I2 " + to_string(return_val_offset));
             commands->emit("ADD2I I1 I1 " + to_string(return_val_offset));
-            $$->value = return_val_offset;
+            $$.value = return_val_offset;
             int func_line = commands->nextquad();
-            function_table->add_call($1->value, func_line, called_args, called_scopes);
+            function_table->add_call($1.value, func_line, called_args, called_scopes);
             commands->emit("JLINK " + to_string(func_line));
             return_val_offset -= called_args->size() + func_scopes->size() + 4;
             for(int i = 0; i<RegisterIdx[INT];++i){
@@ -549,11 +549,11 @@ ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
 
 SCOPES_LIST:    SCOPES_LIST tk_comma integernum
                 {
-                    called_scopes->push_back(stoi($3->value));
+                    called_scopes->push_back(stoi($3.value));
                 }    |
                 integernum
                 {
-                    called_scopes->push_back(stoi($1->value));
+                    called_scopes->push_back(stoi($1.value));
                 }    ;
 
 CALL_ARGS:  CALL_ARGLIST
@@ -562,21 +562,21 @@ CALL_ARGS:  CALL_ARGLIST
             
 CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
                 {
-                    called_args->push_back(Symbol($3->type, $3->reg));
+                    called_args->push_back(Symbol($3.type, $3.reg));
                 }    |
                 EXP
                 {
-                    called_args->push_back(Symbol($1->type, $1->reg));
+                    called_args->push_back(Symbol($1.type, $1.reg));
                 };
 
 N:
                 {
-                    $$->nextlist = commands->makelist(commands->nextquad()) ; commands->emit("UJUMP ");
+                    $$.nextlist = commands->makelist(commands->nextquad()) ; commands->emit("UJUMP ");
                 };
 
 M:
                 {
-                    $$->quad = commands->nextquad();
+                    $$.quad = commands->nextquad();
                 }
 
 

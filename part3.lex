@@ -71,11 +71,12 @@ scopes          assign_type("scopes");  return tk_scopes;
 %%
 
 void assign_value(const char* type){
-    yylval = makeLine(type, yytext);
+    yylval.type = type;
+    yylval.value = yytext;
 }
 
 void assign_type(const char* type){
-    yylval = makeLine(type, NULL);
+    yylval.type = type;
 }
 
 void assign_value_str(){
