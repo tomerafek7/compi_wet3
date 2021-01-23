@@ -493,7 +493,7 @@ NUM:    integernum
         
 CALL:   id tk_lp
         {
-			is_call = true;
+			in_call = true;
             called_args = new vector<Symbol*>();
         }
         CALL_ARGS tk_rp
@@ -550,7 +550,7 @@ CALL:   id tk_lp
                 commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
                 return_val_offset -= 4;
             }
-			is_call = false;
+			in_call = false;
         };
 
 ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
