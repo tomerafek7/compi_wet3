@@ -251,7 +251,12 @@ ASSN:   LVAL tk_assign EXP ';'
 		}
 		int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
 		string op_type = (type == INT) ? "I" : "F";
-		commands->emit("STOR" + op_type + " " + op_type + to_string($3.reg) + " I1 " + to_string(offset));
+		string addr_reg = "I1";
+		if ($3.type == FLOAT){
+			addr_reg = "F" + to_string(RegisterIdx[FLOAT]++);
+			commands->emit("CITOF " + addr_reg + " I1"); 
+		}
+		commands->emit("STOR" + op_type + " " + op_type + to_string($3.reg) + " " + addr_reg + " " + to_string(offset));
     };
         
 LVAL:   id                                                  	{ $$.value = $1.value; };
