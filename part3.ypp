@@ -35,14 +35,7 @@
 
 PROGRAM:    FDEFS   						                    {}  ;
 
-FDEFS:      FDEFS 
-			{
-				symbol_table_stack->push(current_sym_tbl);
-				current_sym_tbl = new SymbolTable();
-				RegisterIdx[INT] = INIT_REG_INT;
-				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
-			}				
-			FUNC_API
+FDEFS:      FDEFS FUNC_API
 			{
 				// definition - pass dec_line = nextquad
 				function_table->add_function($2.value, commands->nextquad(), $2.type, args_api, scopes_api);
@@ -66,6 +59,10 @@ FDEFS:      FDEFS
 			
 FUNC_API:   TYPE id tk_lp
 			{
+				symbol_table_stack->push(current_sym_tbl);
+				current_sym_tbl = new SymbolTable();
+				RegisterIdx[INT] = INIT_REG_INT;
+				RegisterIdx[FLOAT] = INIT_REG_FLOAT;
 				$$.value = $2.value;
 				$$.type = $1.type;
 				offset = 0;
@@ -246,7 +243,7 @@ READ:   tk_read tk_lp LVAL tk_rp ';'
 			string op_type = ($3.type == INT) ? "I" : "F";
 			commands->emit("READ" + op_type + " " + op_type + to_string($$.reg));
 			commands->emit("STOR" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string(addr_reg_i) + " 0");
-		}	|
+		}	;
         
 ASSN:   LVAL tk_assign EXP ';'
 	{
