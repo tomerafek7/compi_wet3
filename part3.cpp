@@ -104,6 +104,19 @@ vector<int>* FunctionTable::get_scope(string &name){
     return new vector<int>(*this->table->at(name)->scopes);
 }
 
+static bool is_vectors_equal(vector<Symbol*>& vec1, vector<Symbol*>& vec2){
+    if(vec1.size() != vec2.size()){
+        return false;
+    }
+    for(auto it1 = vec1.begin(), it2 = vec2.begin(); it1 != vec1.end(); ++it1,++it2){
+        if((*it1)->name != (*it2)->name || (*it1)->type != (*it2)->type){
+            return false;
+        }
+    }
+    return true;
+
+}
+
 // dec_line = -1 if this is only a declaration.
 void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         vector<Symbol*>* api, vector<int>* scopes){
@@ -115,7 +128,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         // check if this function is only declared / already implemented
         if(res.first->second->dec_line == -1){ // only declared
             // check if api & scopes are similar:
-            if(*api != *res.first->second->api || *scopes != *res.first->second->scopes){
+            if(!is_vectors_equal(*api, *res.first->second->api) || *scopes != *res.first->second->scopes){
                 SemanticError(dec_line, "Wrong API/Scopes for implementation of function");
                 // assuming SemanticError calls exit()
             }
@@ -148,13 +161,13 @@ void FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, 
         SemanticError(call_line, "Function is not declared");
     }
     if(this->table->at(name)->api->size() != api->size()){
-        SemanticError(call_line, "Function Symboluments: size mismatch");//FIXME
+        SemanticError(call_line, "Function Arguments: size mismatch");
     }
     Function* curr_func  = this->table->at(name);
     vector<Symbol*> *called_func_api = curr_func->api;
     for(vector<Symbol*>::iterator it = api->begin(), iter = called_func_api->begin(); it != api->end() || iter != called_func_api->end() ; ++it){
         if((*it)->type != (*iter)->type){
-            SemanticError(call_line, "Function Symboluments type mismatch");
+            SemanticError(call_line, "Function Arguments: type mismatch");
         }
         ++iter;
     }

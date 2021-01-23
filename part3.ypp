@@ -562,11 +562,11 @@ CALL_ARGS:  CALL_ARGLIST
             
 CALL_ARGLIST:   CALL_ARGLIST tk_comma EXP
                 {
-                    called_args->push_back(Symbol($3.type, $3.reg));
+                    called_args->push_back(new Symbol($3.type, $3.reg));
                 }    |
                 EXP
                 {
-                    called_args->push_back(Symbol($1.type, $1.reg));
+                    called_args->push_back(new Symbol($1.type, $1.reg));
                 };
 
 N:
