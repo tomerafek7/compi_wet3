@@ -88,6 +88,7 @@ FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
 				{
 					cout << "trying to push to vector args_api" << endl;
 					args_api->push_back(new Symbol($3.type, $3.value));
+					cout << "pushed to vector args_api" << endl;
 				}	|
 				{
 					offset -= 4; // going down the stack for each argument
@@ -96,6 +97,7 @@ FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
 				{
 					cout << "trying to push to vector args_api" << endl;
 					args_api->push_back(new Symbol($1.type, $1.value));
+					cout << "pushed to vector args_api" << endl;
 				};
               
 BLK: 	'{'
