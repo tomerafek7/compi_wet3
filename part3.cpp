@@ -366,7 +366,7 @@ int main(int argc, char* argv[]){
     assert (rc == 0);  // Parsed successfully
     // print header:
     file << "<header>" << endl;
-    file << "<unimplemented>";
+    file << "<unimplemented> ";
     vector<Function>* unimplemented = function_table->get_all_unimplemented();
     for(auto it = unimplemented->begin(); it != unimplemented->end(); ++it){
         file << it->name << ",[";
@@ -380,7 +380,7 @@ int main(int argc, char* argv[]){
         file << " ";
     }
     file << endl;
-    file << "<implemented>";
+    file << "<implemented> ";
     vector<Function>* implemented = function_table->get_all_implemented();
     for(auto it = implemented->begin(); it != implemented->end(); ++it){
         file << it->name << ",[";
