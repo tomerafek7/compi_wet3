@@ -52,7 +52,7 @@ class Commands {
 public:
     vector<string> command_list;
 
-    Commands();
+    Commands() = default;
 
     void backpatch(vector<int>* list, int address);
 
@@ -130,7 +130,7 @@ class FunctionTable{
 
 public:
 
-    FunctionTable();
+    FunctionTable() = default;
 
     map<string, Function*>* table;
 
@@ -171,7 +171,7 @@ extern bool in_scope;
 
 void SemanticError(int line_num, const char* error);
 
-int main(int argc, char** argv);
+//int main(int argc, char** argv);
 
 #define YYSTYPE Line*
 
