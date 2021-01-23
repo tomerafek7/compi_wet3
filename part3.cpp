@@ -295,8 +295,8 @@ void SemanticError(int line_num, const char* error){
 /**************************************************************************/
 extern int yyparse (void);
 
-/*int main(){
-    *//*
+int main(){
+
     string mystr = "abc";
     auto args = new vector<Symbol*>();
     auto scopes = new vector<int>();
@@ -306,9 +306,9 @@ extern int yyparse (void);
     scopes->push_back(2);
     scopes->push_back(10);
     scopes->push_back(100);
-    function_table->add_function(mystr,-1,INT,args,scopes);
-    args->pop_back();
-    args->push_back(new Symbol(30,FLOAT,mystr));
+    function_table->add_function(mystr,-1,INT,args,scopes,0);
+    //args->pop_back();
+    //args->push_back(new Symbol(30,FLOAT,mystr));
     function_table->add_call(mystr,0,args,scopes);
     commands->emit("JLINK -1");
     function_table->add_call(mystr,1,args,scopes);
@@ -317,38 +317,42 @@ extern int yyparse (void);
     commands->emit("JLINK -1");
     function_table->add_call(mystr,3,args,scopes);
     commands->emit("JLINK -1");
-    function_table->add_function(mystr,10,INT,args,scopes);
+    function_table->add_function(mystr,10,INT,args,scopes,0);
+    mystr = "abdff";
+    function_table->add_function(mystr,10,INT,args,scopes,1);
 
-    vector<int>* l1 = new vector<int>();
-    for(int i=0;i<4;i++){
-        l1->push_back(i);
-    }
-    vector<int>* l2 = new vector<int>();
-    for(int i=4;i<8;i++){
-        l2->push_back(i);
-    }
-    auto l3 = commands->merge(*l1,*l2);
-    cout << "";
+//
+//    vector<int>* l1 = new vector<int>();
+//    for(int i=0;i<4;i++){
+//        l1->push_back(i);
+//    }
+//    vector<int>* l2 = new vector<int>();
+//    for(int i=4;i<8;i++){
+//        l2->push_back(i);
+//    }
+//    auto l3 = commands->merge(*l1,*l2);
+//    cout << "";
+//
+//    auto l4 = commands->makelist(5);
+//    cout << "";
+//
+//    string str = "x";
+//    current_sym_tbl->add_symbol(1,str,-4,INT);
+//    current_sym_tbl->get_symbol_offset(2,str);
+//    current_sym_tbl->get_symbol_type(2,str);
+//    symbol_table_stack->push(current_sym_tbl);
+//    current_sym_tbl = new SymbolTable();
+//    string str2 = "xy";
+//    current_sym_tbl->add_symbol(3,str2,-8,FLOAT);
+//    current_sym_tbl->get_symbol_offset(4,str2);
+//    current_sym_tbl->get_symbol_type(5,str2);
+//    current_sym_tbl = symbol_table_stack->top();
+//    symbol_table_stack->pop();
+//    current_sym_tbl->get_symbol_offset(2,str);
+//    current_sym_tbl->get_symbol_type(2,str);
+}
 
-    auto l4 = commands->makelist(5);
-    cout << "";
-    *//*
-    string str = "x";
-    current_sym_tbl->add_symbol(1,str,-4,INT);
-    current_sym_tbl->get_symbol_offset(2,str);
-    current_sym_tbl->get_symbol_type(2,str);
-    symbol_table_stack->push(current_sym_tbl);
-    current_sym_tbl = new SymbolTable();
-    string str2 = "xy";
-    current_sym_tbl->add_symbol(3,str2,-8,FLOAT);
-    current_sym_tbl->get_symbol_offset(4,str2);
-    current_sym_tbl->get_symbol_type(5,str2);
-    current_sym_tbl = symbol_table_stack->top();
-    symbol_table_stack->pop();
-    current_sym_tbl->get_symbol_offset(2,str);
-    current_sym_tbl->get_symbol_type(2,str);
-}*/
-
+/*
 int main(int argc, char* argv[]){
     int rc;
     string arg_file = argv[1];
@@ -412,3 +416,4 @@ int main(int argc, char* argv[]){
     file.close();
     return rc;
 }
+*/

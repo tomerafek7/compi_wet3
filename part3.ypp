@@ -61,6 +61,7 @@ FDEFS:      FDEFS FUNC_API
 			
 FUNC_API:   TYPE id tk_lp
 			{
+				cout << $1.value << $2.value << endl;
 				symbol_table_stack->push(current_sym_tbl);
 				current_sym_tbl = new SymbolTable();
 				RegisterIdx[INT] = INIT_REG_INT;
