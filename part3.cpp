@@ -374,7 +374,7 @@ int main(int argc, char* argv[]){
             file << to_string(*s_it) << ";";
         }
         file << "],";
-        for(auto c_it = it->scopes->begin(); c_it != it->scopes->end(); ++c_it){
+        for(auto c_it = it->calls->begin(); c_it != it->calls->end(); ++c_it){
             file << to_string(*c_it) << ",";
         }
         file << " ";
@@ -387,10 +387,7 @@ int main(int argc, char* argv[]){
         for(auto s_it = it->scopes->begin(); s_it != it->scopes->end(); ++s_it){
             file << to_string(*s_it) << ";";
         }
-        file << "],";
-        for(auto c_it = it->scopes->begin(); c_it != it->scopes->end(); ++c_it){
-            file << to_string(*c_it) << ",";
-        }
+        file << "]," << to_string(it->dec_line);
         file << " ";
     }
     file << endl;
