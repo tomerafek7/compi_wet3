@@ -79,13 +79,17 @@ public:
     Symbol(int offset, Type type, int reg , string &name);
     Symbol(Type type, string &name);
     Symbol(Type type, int reg);
-    inline bool operator==(const Symbol& sym){
-        return type == sym.type && name == sym.name;
-    }
-    inline bool operator!=(const Symbol& sym){
-        return type != sym.type && name != sym.name;
-    }
+
+
 };
+
+inline bool operator==(const Symbol& sym1, const Symbol& sym2){
+    return sym1.type == sym2.type && sym2.name == sym1.name;
+}
+
+inline bool operator!=(const Symbol& sym1, const Symbol& sym2){
+    return !(sym1 == sym2);
+}
 
 
 class SymbolTable{

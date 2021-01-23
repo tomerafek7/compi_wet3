@@ -12,7 +12,7 @@ Commands *commands = new Commands();
 
 FunctionTable* function_table = new FunctionTable();
 
-stack<SymbolTable>* symbol_table_stack = new stack<SymbolTable>();
+stack<SymbolTable*>* symbol_table_stack = new stack<SymbolTable*>();
 
 SymbolTable* currnet_sym_tbl = new SymbolTable();
 
@@ -117,7 +117,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
             // 1. update the dec_line
             table->at(name)->dec_line = dec_line;
             // 2. update the dec_line for all calls:
-            for(auto it = table->at(name)->calls->begin(); it != scopes.end() ; ++it){
+            for(auto it = table->at(name)->calls->begin(); it != scopes->end() ; ++it){
                 commands->command_list[*it] = "JLINK " + to_string(dec_line);
             }
         } else{ // already implemented
