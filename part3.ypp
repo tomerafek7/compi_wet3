@@ -221,6 +221,8 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
 						case '"':
 							commands->emit("PRNTC 34"); // 34 is " in ascii
 							break;
+					    default:
+					        break;
 					}
 				} else{
 					commands->emit("PRNTC " + *str);
