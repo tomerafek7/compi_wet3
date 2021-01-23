@@ -120,6 +120,7 @@ static bool is_vectors_equal(vector<Symbol*>& vec1, vector<Symbol*>& vec2){
 // dec_line = -1 if this is only a declaration.
 void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         vector<Symbol*>* api, vector<int>* scopes) {
+    cout << "entered add function method with dec_line = " << to_string(dec_line) << endl;
     std::pair<std::map<string, Function *>::iterator, bool> res;
     res = table->insert(std::pair<string, Function *>(name,
                                                       new Function(dec_line,
