@@ -17,7 +17,7 @@ vector<int>* called_scopes;
 vector<Symbol*>* called_args;
 int offset;
 bool in_scope = false;
-
+bool in_call = false;
 
 Commands::Commands(){
     command_list = new vector<string>();
@@ -114,13 +114,26 @@ static bool is_vectors_equal(vector<Symbol*>& vec1, vector<Symbol*>& vec2){
         }
     }
     return true;
+}
+
+static bool is_vectors_equal(vector<int>& vec1, vector<int>& vec2){
+    if(vec1.size() != vec2.size()){
+        return false;
+    }
+    for(auto it1 = vec1.begin(), it2 = vec2.begin(); it1 != vec1.end(); ++it1,++it2){
+        if((*it1)!= (*it2)){
+            return false;
+        }
+    }
+    return true;
 
 }
 
 // dec_line = -1 if this is only a declaration.
 void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         vector<Symbol*>* api, vector<int>* scopes) {
-    cout << "entered add function method with dec_line = " << to_string(dec_line) << endl;
+    cout << "entered add function method with dec_line = "
+         << to_string(dec_line) << endl;
     std::pair<std::map<string, Function *>::iterator, bool> res;
     res = table->insert(std::pair<string, Function *>(name,
                                                       new Function(dec_line,
@@ -128,31 +141,33 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
                                                                    *api,
                                                                    *scopes,
                                                                    name)));
-    // if the insert didn't succeeded && this call is for declaration --> ERROR
-    if (!res.second && dec_line == -1) {
-        // there's already a function with this name
-        SemanticError(dec_line, "Redeclaration of Function");
-    } else {
-        // check if this function is only declared / already implemented
-        if (res.first->second->dec_line == -1) { // only declared
-            // check if api & scopes are similar:
-            if (!is_vectors_equal(*api, *res.first->second->api) ||
-                *scopes != *res.first->second->scopes) {
-                SemanticError(dec_line,
-                              "Wrong API/Scopes for implementation of function");
-                // assuming SemanticError calls exit()
+    if (res.second) { // successfully inserted
+        return;
+    } else { // didn't insert (there's already a function with this name)
+        if (dec_line == -1) { // declaration
+            SemanticError(dec_line, "Redeclaration of Function");
+        } else {
+            // check if this function is only declared / already implemented
+            if (res.first->second->dec_line != -1) { // already implemented
+                SemanticError(dec_line, "ReImplementation of Function");
+            } else { // only declared
+                // check if api & scopes are similar:
+                if (!is_vectors_equal(*api, *res.first->second->api) ||
+                    *scopes != *res.first->second->scopes) {
+                    SemanticError(dec_line,
+                                  "Wrong API/Scopes for implementation of function");
+                    // assuming SemanticError calls exit()
+                }
+                // if they are:
+                // 1. update the dec_line
+                table->at(name)->dec_line = dec_line;
+                // 2. update the dec_line for all calls:
+                for (auto it = table->at(name)->calls->begin();
+                     it != table->at(name)->calls->end(); ++it) {
+                    commands->command_list->at(*it) =
+                            "JLINK " + to_string(dec_line);
+                }
             }
-            // if they are:
-            // 1. update the dec_line
-            table->at(name)->dec_line = dec_line;
-            // 2. update the dec_line for all calls:
-            for (auto it = table->at(name)->calls->begin();
-                 it != scopes->end(); ++it) {
-                commands->command_list->at(*it) =
-                        "JLINK " + to_string(dec_line);
-            }
-        } else { // already implemented
-            SemanticError(dec_line, "ReImplementation of Function");
         }
     }
 }
@@ -182,9 +197,9 @@ void FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, 
         ++iter;
     }
     vector<int> *called_func_scopes = curr_func->scopes;
-    for(vector<int>::iterator it = scopes->begin(); it != scopes->end() ; ++it){
-        if(find(called_func_scopes->begin(), called_func_scopes->end(), *it) != called_func_scopes->end()){
-            SemanticError(call_line,  "Function scope error" );//FIXME
+    for(auto it = scopes->begin(); it != scopes->end() ; ++it){
+        if(find(called_func_scopes->begin(), called_func_scopes->end(), *it) == called_func_scopes->end()){
+            SemanticError(call_line,  "Function scope error" );
         }
     }
     curr_func->add_call(call_line);
@@ -280,17 +295,51 @@ void SemanticError(int line_num, const char* error){
 /**************************************************************************/
 extern int yyparse (void);
 
-//int main(){
+/*int main(){
 //    string mystr = "abc";
-////    SymbolTable* sym_tbl = new SymbolTable();
-//    current_sym_tbl->add_symbol(30,mystr,1,INT);
-//    map<string,Symbol> my_map = map<string,Symbol>();
-////    auto res = my_map.insert(make_pair(mystr,Symbol(1,INT,mystr)));
-////    printf("%d\n", (int)res.second);
-////    printf("%d",(int)my_map.count(mystr));
+////////    SymbolTable* sym_tbl = new SymbolTable();
+//////    current_sym_tbl->add_symbol(30,mystr,1,INT);
+//////    map<string,Symbol> my_map = map<string,Symbol>();
+////////    auto res = my_map.insert(make_pair(mystr,Symbol(1,INT,mystr)));
+////////    printf("%d\n", (int)res.second);
+////////    printf("%d",(int)my_map.count(mystr));
 //
-//
-//}
+//    auto args = new vector<Symbol*>();
+//    auto scopes = new vector<int>();
+//    args->push_back(new Symbol(30,INT,mystr));
+//    args->push_back(new Symbol(30,INT,mystr));
+//    args->push_back(new Symbol(30,INT,mystr));
+//    scopes->push_back(2);
+//    scopes->push_back(10);
+//    scopes->push_back(100);
+//    function_table->add_function(mystr,-1,INT,args,scopes);
+//    args->pop_back();
+//    args->push_back(new Symbol(30,FLOAT,mystr));
+//    function_table->add_call(mystr,0,args,scopes);
+//    commands->emit("JLINK -1");
+//    function_table->add_call(mystr,1,args,scopes);
+//    commands->emit("JLINK -1");
+//    function_table->add_call(mystr,2,args,scopes);
+//    commands->emit("JLINK -1");
+//    function_table->add_call(mystr,3,args,scopes);
+//    commands->emit("JLINK -1");
+//    function_table->add_function(mystr,10,INT,args,scopes);
+
+    vector<int>* l1 = new vector<int>();
+    for(int i=0;i<4;i++){
+        l1->push_back(i);
+    }
+    vector<int>* l2 = new vector<int>();
+    for(int i=4;i<8;i++){
+        l2->push_back(i);
+    }
+    auto l3 = commands->merge(*l1,*l2);
+    cout << "";
+
+    auto l4 = commands->makelist(5);
+    cout << "";
+
+}*/
 
 int main(int argc, char* argv[]){
     int rc;

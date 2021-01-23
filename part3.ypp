@@ -68,7 +68,6 @@ FUNC_API:   TYPE id tk_lp
 				offset = 0;
 				args_api = new vector<Symbol*>();
 				scopes_api = new vector<int>();
-				called_scopes = new vector<int>();
 				cout << "init vectors" << endl;
 			}
 			FUNC_ARGS tk_rp SCOPES_API
@@ -494,6 +493,7 @@ NUM:    integernum
         
 CALL:   id tk_lp
         {
+			is_call = true;
             called_args = new vector<Symbol*>();
         }
         CALL_ARGS tk_rp
@@ -550,6 +550,7 @@ CALL:   id tk_lp
                 commands->emit("STORI I" + to_string(i) + "I2 " + to_string(return_val_offset));
                 return_val_offset -= 4;
             }
+			is_call = false;
         };
 
 ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
@@ -558,13 +559,35 @@ ACTIVATE_SCOPES:    tk_dot tk_activate tk_lp SCOPES_LIST tk_rp
 
 SCOPES_LIST:    SCOPES_LIST tk_comma integernum
                 {
-                    called_scopes->push_back(stoi($3.value));
-                    scopes_api->push_back(stoi($3.value));
+					if(in_call){
+						if(called_scopes->contains(stoi($3.value))){
+							SemanticError("Call function with 2 similar scopes");
+						} else {
+							called_scopes->push_back(stoi($3.value));	
+						}
+					} else {
+						if(scopes_api->contains(stoi($3.value))){
+							SemanticError("Declaration of function with 2 similar scopes");
+						} else {
+							scopes_api->push_back(stoi($3.value));
+						}
+					}
                 }    |
                 integernum
                 {
-                    called_scopes->push_back(stoi($1.value));
-                    scopes_api->push_back(stoi($1.value));
+					if(in_call){
+						if(called_scopes->contains(stoi($1.value))){
+							SemanticError("Call function with 2 similar scopes");
+						} else {
+							called_scopes->push_back(stoi($1.value));	
+						}
+					} else {
+						if(scopes_api->contains(stoi($1.value))){
+							SemanticError("Declaration of function with 2 similar scopes");
+						} else {
+							scopes_api->push_back(stoi($1.value));
+						}
+					}
                 }    ;
 
 CALL_ARGS:  CALL_ARGLIST
