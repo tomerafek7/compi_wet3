@@ -1,0 +1,33 @@
+# This is an example
+
+void foo(a : int).scopes(2, 10, 100) {
+	SCOPE(2) {
+		write(a*a);
+	}
+
+	SCOPE(10) {
+		write(a*a*a*a*a);
+	}
+
+	SCOPE(100) {
+		b : int;
+		b = a*a*a*a*a * a*a*a*a*a;
+		write(b);
+	}
+}
+
+void main()
+{
+	a : int;
+	B: float;
+    	a = 2;
+	B =(float)a + 55.0;
+	write("This is \"a\":\n");
+	write(a);
+	if B<>1.2 then {
+        big_var : int;
+	    big_var = (int)a + (int)B;
+        write(big_var);
+    }
+	foo(2).activate(100, 10);
+}
