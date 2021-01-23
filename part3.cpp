@@ -244,7 +244,7 @@ void SemanticError(int line_num, const char* error){
 /**************************************************************************/
 extern int yyparse (void);
 
-int main(int argc, char** argv){
+int main(int argc, char* argv[]){
     int rc;
     char* filename = argv[0];
     ofstream file;
