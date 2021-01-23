@@ -380,7 +380,7 @@ int main(int argc, char* argv[]){
         file << " ";
     }
     file << endl;
-    file << "<implemented>" << endl;
+    file << "<implemented>";
     vector<Function>* implemented = function_table->get_all_implemented();
     for(auto it = implemented->begin(); it != implemented->end(); ++it){
         file << it->name << ",[";
