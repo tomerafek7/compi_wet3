@@ -39,7 +39,7 @@ FDEFS:      FDEFS FUNC_API
 			{
 				// definition - pass dec_line = nextquad
 				function_table->add_function($2.value, commands->nextquad(), $2.type, args_api, scopes_api);
-				offset = 0;
+				offset = 4;
 				scopes_iter = scopes_api->begin();
 			}
 			BLK
@@ -101,11 +101,11 @@ FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
 				};
               
 BLK: 	'{'
-		//{
+		{
 			// pushing the symbol table so the block won't override it.
-		//	symbol_table_stack->push(current_sym_tbl);
-	//		// keeping the symbol table so we could append it inside the block.
-//		}
+			symbol_table_stack->push(current_sym_tbl);
+			// keeping the symbol table so we could append it inside the block.
+		}
 		STLIST '}'
 		{
 			// popping the symbol table
@@ -133,11 +133,10 @@ STLIST: STLIST STMT 						                    |
                                                                 ; // epsilon
         
 STMT:
-		{
-			offset+=4; /*going up the stack for each new variable*/
-		}
+
 		DCL ';'
 		{
+			offset+=4; /*going up the stack for each new variable*/
 			commands->emit("ADD2I I2 I2 4"); // I2 += 4
 		}	|
         ASSN        						                    {}  |
@@ -535,9 +534,10 @@ CALL:   id tk_lp
                     commands->emit("STORI I" + to_string((*it)->reg) + "I2 " + to_string(return_val_offset));
                 }
             }
+			//Saving place for function return value
             return_val_offset += 4;
+            commands->emit("ADD2I I1 I2 " + to_string(return_val_offset));
             commands->emit("ADD2I I2 I2 " + to_string(return_val_offset));
-            commands->emit("ADD2I I1 I1 " + to_string(return_val_offset));
             $$.value = return_val_offset;
             int func_line = commands->nextquad();
             function_table->add_call($1.value, func_line, called_args, called_scopes);
