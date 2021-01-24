@@ -18,6 +18,7 @@ vector<Symbol*>* called_args;
 int offset;
 bool in_scope = false;
 bool in_call = false;
+int scope_jump_line;
 
 Commands::Commands(){
     command_list = new vector<string>();

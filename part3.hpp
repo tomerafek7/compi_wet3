@@ -169,6 +169,8 @@ extern vector<Symbol*>* called_args;
 extern int offset;
 extern bool in_scope;
 extern bool in_call;
+extern int scope_jump_line;
+
 
 void SemanticError(int line_num, const char* error);
 
