@@ -532,7 +532,7 @@ CALL:   id tk_lp
             int return_val_offset = 0;
             //All register are calle safe
             int stack_ptr_float = RegisterIdx[FLOAT]+1;
-            commands->emit("CITOF F" + to_string(stack_ptr_float) + "I2");
+            commands->emit("CITOF F" + to_string(stack_ptr_float) + " I2");
             for(int i=0; i < RegisterIdx[INT]; ++i){
                 return_val_offset += 4;
                 commands->emit("STORI I" + to_string(i) + " I2 " + to_string(return_val_offset));
@@ -578,7 +578,7 @@ CALL:   id tk_lp
             commands->emit("ADD2I I2 I2 " + to_string(-return_val_offset));
 			// restoring regs:
 			return_val_offset = 0;
-			commands->emit("CITOF F" + to_string(stack_ptr_float) + "I2");
+			commands->emit("CITOF F" + to_string(stack_ptr_float) + " I2");
             for(int i = RegisterIdx[FLOAT]-1; i>=0 ; --i){
                 commands->emit("LOADF F" + to_string(i) + " F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset) );
                 return_val_offset -= 4;
