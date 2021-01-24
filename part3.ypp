@@ -466,18 +466,18 @@ EXP:    EXP addop EXP
 			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
 			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
 			$$.reg = RegisterIdx[$$.type]++;
-			int addr_reg_i = RegisterIdx[INT]++;
+/* 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){
 				commands->emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
 			} else{ // offset <= 0
 				commands->emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
-			}
+			} */
 			if ($$.type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
-				commands->emit("CITOF F" + to_string(addr_reg_f) + " I" + to_string(addr_reg_i));
-				commands->emit("LOADF F" + to_string($$.reg) + " F" + to_string(addr_reg_f) + " 0");
+				commands->emit("CITOF F" + to_string(addr_reg_f) + " I1");
+				commands->emit("LOADF F" + to_string($$.reg) + " F" + to_string(addr_reg_f) + " " + to_string(offset));
 			} else{ // integer - no casting is needed
-				commands->emit("LOADI I" + to_string($$.reg) + " I" + to_string(addr_reg_i) + " 0");
+				commands->emit("LOADI I" + to_string($$.reg) + " I1 " + to_string(offset));
 			}
 
 		}	|
