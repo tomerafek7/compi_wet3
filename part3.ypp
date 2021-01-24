@@ -303,10 +303,7 @@ BEXP:   BEXP tk_or M BEXP     					                {
 		{
 			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands->.
 			if($1.type != $3.type){
-				cout << $1.type << " " << $1.reg << endl;
-				cout << $3.type << " " << $3.reg << endl;
 				SemanticError(yylineno,"Cannot Compare Expressions with different types");
-				exit(11);
 			}
 			// assuming SemanticError is exiting the program.
 			Type type = $1.type; // they both have the same type
@@ -462,7 +459,6 @@ EXP:    EXP addop EXP
 		{ 
 			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
 			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
-			cout << $$.type << endl;
 			$$.reg = RegisterIdx[$$.type]++;
 			int addr_reg_i = RegisterIdx[INT]++;
 			if (offset > 0){

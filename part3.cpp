@@ -27,7 +27,7 @@ void Commands::backpatch(vector<int>& list, int address){
     cout << "backpatching list: ";
     for (vector<int>::iterator it = list.begin() ; it != list.end(); ++it){
         cout << *it;
-        command_list->at(*it) += to_string(address);
+        command_list->at(*it-1) += to_string(address);
     }
     cout << endl;
 }
