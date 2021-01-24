@@ -369,6 +369,9 @@ extern int yyparse (void);
 
 int main(int argc, char* argv[]){
     int rc;
+    yyin = fopen(argv[1], "r");
+    rc = yyparse();
+    assert (rc == 0);  // Parsed successfully (if not - should exit at error)
     string arg_file = argv[1];
     string filename = arg_file.substr(0,arg_file.find_last_of('.'))+".rsk";
 
@@ -378,10 +381,6 @@ int main(int argc, char* argv[]){
         cerr << "Operational error: cannot open input file" << endl;
         exit(Operational);
     }
-
-    yyin = fopen(argv[1], "r");
-    rc = yyparse();
-    assert (rc == 0);  // Parsed successfully
     // print header:
     file << "<header>" << endl;
     file << "<unimplemented> ";
