@@ -336,37 +336,37 @@ BEXP:   BEXP tk_or M BEXP     					                {
 				if (type == FLOAT){
 					commands->emit("CFTOI " + jump_reg + " " + compare_reg); // convert
 				}
-				commands->emit("BNEQZ "+jump_reg);
+				commands->emit("BNEQZ " + jump_reg + " ");
 			} else if($2.value == "<>"){
 				commands->emit("SNEQ" + op_type + " " + compare_reg + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
                 if (type == FLOAT){
                     commands->emit("CFTOI " + jump_reg + " " + compare_reg); // convert
                 }
-				commands->emit("BNEQZ " + jump_reg);
+				commands->emit("BNEQZ " + jump_reg + " ");
 			} else if($2.value == "<"){
 				commands->emit("SLET" + op_type + " " + compare_reg + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
                 if (type == FLOAT){
                     commands->emit("CFTOI " + jump_reg + " " + compare_reg); // convert
                 }
-                commands->emit("BNEQZ " + jump_reg);
+                commands->emit("BNEQZ " + jump_reg+ " ");
 			} else if($2.value == ">"){
 				commands->emit("SGRT" + op_type + " " + compare_reg + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
                 if (type == FLOAT){
                     commands->emit("CFTOI " + jump_reg + " " + compare_reg); // convert
                 }
-                commands->emit("BNEQZ " + jump_reg);
+                commands->emit("BNEQZ " + jump_reg + " ");
 			} else if($2.value == "<="){
 				commands->emit("SGRT" + op_type + " " + compare_reg + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
                 if (type == FLOAT){
                     commands->emit("CFTOI " + jump_reg + " " + compare_reg); // convert
                 }
-				commands->emit("BREQZ " + jump_reg);
+				commands->emit("BREQZ " + jump_reg + " ");
 			} else{ // >=
 				commands->emit("SLET" + op_type + " " + compare_reg + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
                 if (type == FLOAT){
                     commands->emit("CFTOI " + jump_reg + " " + compare_reg); // convert
                 }
-				commands->emit("BREQZ " + jump_reg);
+				commands->emit("BREQZ " + jump_reg + " ");
 			}
 
 			$$.truelist = commands->makelist(commands->nextquad() -1); // previous command.
