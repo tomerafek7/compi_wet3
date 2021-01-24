@@ -370,15 +370,21 @@ extern int yyparse (void);
 int main(int argc, char* argv[]){
     int rc;
     yyin = fopen(argv[1], "r");
+    if(yyin == nullptr){
+        cerr << "Operational error: cannot open input file" << endl;
+        exit(Operational);
+    }
+    // call bison to parse
     rc = yyparse();
     assert (rc == 0);  // Parsed successfully (if not - should exit at error)
+    // output file handling:
     string arg_file = argv[1];
     string filename = arg_file.substr(0,arg_file.find_last_of('.'))+".rsk";
-
     ofstream file;
     file.open(filename);
+
     if(!file.is_open()) {
-        cerr << "Operational error: cannot open input file" << endl;
+        cerr << "Operational error: cannot open output file" << endl;
         exit(Operational);
     }
     // print header:
