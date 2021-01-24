@@ -154,8 +154,9 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
             // check if api & scopes are similar:
             if (!is_vectors_equal(*api, *res.first->second->api) ||
                 *scopes != *res.first->second->scopes) {
-                SemanticError( cmm_line_no,
-                               "Wrong API/Scopes for implementation of function");
+                SemanticError(cmm_line_no,
+                              "Wrong API/Scopes for implementation of function");
+            }
         } else { // declaration --> implementation
             // check if api & scopes are similar:
             if (!is_vectors_equal(*api, *res.first->second->api) ||
