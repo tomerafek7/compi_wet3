@@ -317,7 +317,6 @@ BEXP:   BEXP tk_or M BEXP     					                {
 
     	EXP relop EXP
 		{
-			$$.truelist = commands->makelist(commands->nextquad() + 1); // there are two commands->.
 			if($1.type != $3.type){
 				SemanticError(yylineno,"Cannot Compare Expressions with different types");
 			}
@@ -325,27 +324,37 @@ BEXP:   BEXP tk_or M BEXP     					                {
 			Type type = $1.type; // they both have the same type
 			string op_type = (type == INT) ? "I" : "F";
 			int reg = RegisterIdx[type]++;
+			string compare_reg;
+			if(type == FLOAT){
+				compare_reg = "I" + to_string(RegisterIdx[INT]++);
+			}
+		
 			if($2.value == "=="){
 				commands->emit("SEQU" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
-				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
+				if (type == FLOAT){
+					commands->emit("CFTOI " + float_reg + " " + op_type + to_string(reg)); // convert
+				}
+				commands->emit("BNEQZ I" + to_string(reg) + " ");
 			} else if($2.value == "<>"){
 				commands->emit("SNEQ" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
-				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
+				commands->emit("BNEQZ I" + to_string(reg) + " ");
 			} else if($2.value == "<"){
 				commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
-				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
+				commands->emit("BNEQZ I" + to_string(reg) + " ");
 			} else if($2.value == ">"){
 				commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
-				commands->emit("BNEQZ " + op_type + to_string(reg) + " ");
+				commands->emit("BNEQZ I" + to_string(reg) + " ");
 			} else if($2.value == "<="){
 				commands->emit("SGRT" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
-				commands->emit("BREQZ " + op_type + to_string(reg) + " ");
+				commands->emit("BREQZ I" + to_string(reg) + " ");
 			} else{ // >=
 				commands->emit("SLET" + op_type + " " + op_type + to_string(reg) + " " + op_type + to_string($1.reg) + " " + op_type + to_string($3.reg));
-				commands->emit("BREQZ " + op_type + to_string(reg) + " ");
+				commands->emit("BREQZ I" + to_string(reg) + " ");
 			}
 
+			$$.truelist = commands->makelist(commands->nextquad() -1); // previous command.
 			$$.falselist = commands->makelist(commands->nextquad());
+			
 			commands->emit("UJUMP ");
 
 		}  |
