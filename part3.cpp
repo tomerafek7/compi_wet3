@@ -148,8 +148,9 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
     } else { // didn't insert (there's already a function with this name)
         if (dec_line == -1 && res.first->second->dec_line == -1) { // 2nd declaration
             SemanticError( cmm_line_no, "Redeclaration of Function");
-        } else {
-            // check if this function is only declared / already implemented
+        } else if(dec_line != -1 && res.first->second->dec_line != -1) { // 2nd implementation
+            SemanticError(cmm_line_no, "ReImplementation of Function");
+        } else { // implementation --> declaration / declaration --> implementation
             if (res.first->second->dec_line != -1) { // already implemented
                 SemanticError( cmm_line_no, "ReImplementation of Function");
             } else { // only declared
