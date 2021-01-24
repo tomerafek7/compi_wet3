@@ -180,14 +180,14 @@ STMT:
         
 RETURN: tk_return EXP ';'
 		{
-			string op_type = ($3.type == INT) ? "I" : "F";
+			string op_type = ($2.type == INT) ? "I" : "F";
 			int addr_reg_i = RegisterIdx[FLOAT]++;
-			if ($3.type == FLOAT){ // float - casting is needed
+			if ($2.type == FLOAT){ // float - casting is needed
 				int addr_reg_f = RegisterIdx[FLOAT]++;
 				commands->emit("CITOF F" + to_string(addr_reg_f) + " I1"); // cast I1 to a float register
-				commands->emit("STORF F" + to_string($3.reg) + " F" + to_string(addr_reg_f) + " 0"); // writing the value to address stored in I1.
+				commands->emit("STORF F" + to_string($2.reg) + " F" + to_string(addr_reg_f) + " 0"); // writing the value to address stored in I1.
 			} else{ // integer - no casting is needed
-				commands->emit("STORI I" + to_string($3.reg) + " I1 " + "0"); // writing the value to address stored in I1.
+				commands->emit("STORI I" + to_string($2.reg) + " I1 " + "0"); // writing the value to address stored in I1.
 			}
 			// at last, reset stack (I2)  + return command
 			commands->emit("COPYI I2 I1");
