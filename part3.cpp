@@ -150,30 +150,32 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
             SemanticError( cmm_line_no, "Redeclaration of Function");
         } else if(dec_line != -1 && res.first->second->dec_line != -1) { // 2nd implementation
             SemanticError(cmm_line_no, "ReImplementation of Function");
-        } else { // implementation --> declaration / declaration --> implementation
-            if (res.first->second->dec_line != -1) { // already implemented
-                SemanticError( cmm_line_no, "ReImplementation of Function");
-            } else { // only declared
-                // check if api & scopes are similar:
-                if (!is_vectors_equal(*api, *res.first->second->api) ||
-                    *scopes != *res.first->second->scopes) {
-                    SemanticError( cmm_line_no,
-                                  "Wrong API/Scopes for implementation of function");
-                    // assuming SemanticError calls exit()
-                }
-                // if they are:
-                // 1. update the dec_line
-                table->at(name)->dec_line = dec_line;
-                // 2. update the dec_line for all calls:
-                for (auto it = table->at(name)->calls->begin();
-                     it != table->at(name)->calls->end(); ++it) {
-                    commands->command_list->at(*it) =
-                            "JLINK " + to_string(dec_line);
-                }
+        } else if(dec_line == -1 && res.first->second->dec_line != -1) { // implementation --> declaration
+            // check if api & scopes are similar:
+            if (!is_vectors_equal(*api, *res.first->second->api) ||
+                *scopes != *res.first->second->scopes) {
+                SemanticError( cmm_line_no,
+                               "Wrong API/Scopes for implementation of function");
+        } else { // declaration --> implementation
+            // check if api & scopes are similar:
+            if (!is_vectors_equal(*api, *res.first->second->api) ||
+                *scopes != *res.first->second->scopes) {
+                SemanticError( cmm_line_no,
+                              "Wrong API/Scopes for implementation of function");
+            }
+            // if they are:
+            // 1. update the dec_line
+            table->at(name)->dec_line = dec_line;
+            // 2. update the dec_line for all calls:
+            for (auto it = table->at(name)->calls->begin();
+                 it != table->at(name)->calls->end(); ++it) {
+                commands->command_list->at(*it) =
+                        "JLINK " + to_string(dec_line);
             }
         }
     }
 }
+
 
 //void FunctionTable::add_api(string &name, vector<Type> & api){
 //    table->at(name)->insertApi(api);
