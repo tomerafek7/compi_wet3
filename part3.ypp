@@ -239,18 +239,28 @@ WRITE:  tk_write tk_lp EXP tk_rp ';'
         
 READ:   tk_read tk_lp LVAL tk_rp ';'
 		{
-			int offset = current_sym_tbl->get_symbol_offset(yylineno, $1.value);
-			$$.type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
+			int offset = current_sym_tbl->get_symbol_offset(yylineno, $3.value);
+			$$.type = current_sym_tbl->get_symbol_type(yylineno, $3.value);
 			$$.reg = RegisterIdx[$$.type]++;
-			int addr_reg_i = RegisterIdx[INT]++;
-			if (offset > 0){
-				commands->emit("ADD2I I" + to_string(addr_reg_i) + " I1 " + to_string(offset));
-			} else{ // offset <= 0
-				commands->emit("SUBTI I" + to_string(addr_reg_i) + " I1 " + to_string(-offset));
+			int addr_reg_f;
+			// load:
+			if ($$.type == FLOAT){ // float - casting is needed
+				addr_reg_f = RegisterIdx[FLOAT]++;
+				commands->emit("CITOF F" + to_string(addr_reg_f) + " I1");
+				commands->emit("LOADF F" + to_string($$.reg) + " F" + to_string(addr_reg_f) + " " + to_string(offset));
+			} else{ // integer - no casting is needed
+				commands->emit("LOADI I" + to_string($$.reg) + " I1 " + to_string(offset));
 			}
-			string op_type = ($3.type == INT) ? "I" : "F";
+			string op_type = ($$.type == INT) ? "I" : "F";
+			// read:
 			commands->emit("READ" + op_type + " " + op_type + to_string($$.reg));
-			commands->emit("STOR" + op_type + " " + op_type + to_string($$.reg) + " " + op_type + to_string(addr_reg_i) + " 0");
+			// store:
+			if ($$.type == FLOAT){ // float - casting is needed
+				commands->emit("CITOF F" + to_string(addr_reg_f) + " I1");
+				commands->emit("STORF F" + to_string($$.reg) + " F" + to_string(addr_reg_f) + " " + to_string(offset));
+			} else{ // integer - no casting is needed
+				commands->emit("STORI I" + to_string($$.reg) + " I1 " + to_string(offset));
+			}	
 		}	;
         
 ASSN:   LVAL tk_assign EXP ';'
