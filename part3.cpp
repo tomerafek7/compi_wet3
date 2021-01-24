@@ -146,7 +146,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
     if (res.second) { // successfully inserted
         return;
     } else { // didn't insert (there's already a function with this name)
-        if (dec_line == -1) { // declaration
+        if (dec_line == -1 && res.first->second->dec_line == -1) { // 2nd declaration
             SemanticError( cmm_line_no, "Redeclaration of Function");
         } else {
             // check if this function is only declared / already implemented
