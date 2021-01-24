@@ -567,10 +567,10 @@ CALL:   id tk_lp
             commands->emit("ADD2I I2 I2 " + to_string(return_val_offset));
 			// saving the offset for the return value
             $$.value = to_string(return_val_offset);
-            int func_line = commands->nextquad();
-            function_table->add_call($1.value, func_line, called_args, called_scopes);
+            int call_line = commands->nextquad();
+            int dec_line = function_table->add_call($1.value, call_line, called_args, called_scopes);
 			////// CALLING FUNCTION //////
-            commands->emit("JLINK " + to_string(func_line));
+            commands->emit("JLINK " + to_string(dec_line));
 			//////////////////////////////
 			// at this point, we assume that I1 = I2 = function return value
             return_val_offset = 4*called_args->size() + 4*func_scopes->size() + 4;

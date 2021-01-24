@@ -182,7 +182,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
 //    table->at(name)->insertScopes(scopes);
 //}
 
-void FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes){
+int FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes){
     // firstly, check that this function really declared
     if (!table->count(name)){
         SemanticError(call_line, "Function is not declared");
@@ -205,6 +205,7 @@ void FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, 
         }
     }
     curr_func->add_call(call_line);
+    return curr_func->dec_line;
 }
 
 vector<Function>* FunctionTable::get_all_implemented(){
