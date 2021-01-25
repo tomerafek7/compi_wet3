@@ -116,6 +116,9 @@ BLK: 	'{'
 		}	;
 
 DCL:    id ':' TYPE                 				            {
+																if($3.type == VOID){
+																	SemanticError(yylineno, "Cannot declare a variable with type void");
+																}
 																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
                                                                 $$.type = $3.type;
 																$$.value = $1.value;
@@ -477,6 +480,10 @@ EXP:    EXP addop EXP
 
         tk_lp TYPE tk_rp EXP    				                
 		{
+			// void check
+			if($2.type == VOID || $4.type == VOID){
+				SemanticError(yylineno, "Cannot convert to/from void");
+			}
 			$$.type = $2.type;
 			Type exp_type = $4.type;
 			if($2.type == exp_type){
@@ -489,7 +496,7 @@ EXP:    EXP addop EXP
 				} else if($2.type == FLOAT){
 					// meaning that EXP is int
 					commands->emit("CITOF F" + to_string($$.reg) + " I" + to_string($4.reg));
-				} else {
+				} else { // shouldn't reach here
 					// void
 					SemanticError(yylineno, "Cannot convert to void");
 				}
