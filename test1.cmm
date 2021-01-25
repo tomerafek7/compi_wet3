@@ -1,15 +1,26 @@
 int foo(a,b,c : int, n,m,k : float, g1,g2,g3:int){
+    write(a);
+    write(b);
+    write(c);
+    write(n);
+    write(m);
+    write(k);
+    write(g1);
+    write(g2);
+    write(g3);
     return a*b*c*(int)n*(int)m*(int)k*g1*g2*g3;
 }
 void main(){
     i : int;
     i=10;
-    while(i<>0){
+    while (i<>0) do{
         write(i);
+        i=i-1;
     }
     write(foo(1,2,3,4.0,5.0,6.0,7,8,9));
     write("\n");
     write("Expected:");
+    write("1 2 3 4.0 5.0 6.0 7 8 9");
     write(1*2*3*4*5*6*7*8*9);
     write("\n");
 }
