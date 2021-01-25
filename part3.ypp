@@ -403,17 +403,8 @@ EXP:    EXP addop EXP
 				reg1 = $1.reg;
 				reg2 = $3.reg;
 				// no casting is needed
-			} else{ // one is integer and the other is float
-				$$.type = FLOAT;
-				if($1.type == INT){ // first is integer
-					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($1.reg) + " F" + to_string(reg1));
-					reg2 = $3.reg;
-				} else{ // second is integer
-					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($3.reg) + " F" + to_string(reg2));
-					reg1 = $1.reg;
-				}
+			} else{ // one is integer and the other is float --> ERROR
+				SemanticError(yylineno, "Can't perform arithmetic operations with different types");
 			}
 			
 			// allocate register for parent
@@ -449,17 +440,8 @@ EXP:    EXP addop EXP
 				reg1 = $1.reg;
 				reg2 = $3.reg;
 				// no casting is needed
-			} else{ // one is integer and the other is float
-				$$.type = FLOAT;
-				if($1.type == INT){ // first is integer
-					reg1 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($1.reg) + " F" + to_string(reg1));
-					reg2 = $3.reg;
-				} else{ // second is integer
-					reg2 = RegisterIdx[FLOAT]++;
-					commands->emit("CITOF I" + to_string($3.reg) + " F" + to_string(reg2));
-					reg1 = $1.reg;
-				}
+			} else{ // one is integer and the other is float --> ERROR
+				SemanticError(yylineno, "Can't perform arithmetic operations with different types");
 			}
 			
 			// allocate register for parent
