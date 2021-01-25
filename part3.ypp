@@ -118,7 +118,7 @@ DCL:    id ':' TYPE                 				            {
 																$$.value = to_string(stoi($3.value) + 1);			
 																if(in_declaration){
 																	//offset -= 4; // going down the stack for each argument
-																	args_api->insert(args_api->end() - (stoi($$.value) + 1), new Symbol($3.type, $1.value));
+																	args_api->insert(args_api->end() - stoi($$.value), new Symbol($3.type, $1.value));
 																	//args_api->push_back(new Symbol($3.type, $1.value));
 																} else {
 																	offset+=4; /*going up the stack for each new variable*/
