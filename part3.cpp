@@ -214,11 +214,11 @@ int FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, v
     }
     Function* curr_func  = this->table->at(name);
     vector<Symbol*> *called_func_api = curr_func->api;
-    for(vector<Symbol*>::iterator it = api->begin(), iter = called_func_api->begin(); it != api->end() || iter != called_func_api->end() ; ++it){
-        if((*it)->type != (*iter)->type){
+    for(vector<Symbol*>::iterator it = api->begin(), iter = called_func_api->begin(); it != api->end() || iter != called_func_api->end() ; ++it, ++iter){
+        cout << (*it)->type << " " << (*iter)->type << endl;
+        if((*it)->type != (*iter)->type) {
             SemanticError(call_line, "Function Arguments: type mismatch");
         }
-        ++iter;
     }
     vector<int> *called_func_scopes = curr_func->scopes;
     for(auto it = scopes->begin(); it != scopes->end() ; ++it){
