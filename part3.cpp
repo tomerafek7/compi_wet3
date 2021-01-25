@@ -103,6 +103,12 @@ int FunctionTable::get_dec_line(int call_line, string& name) {
     is_function_exists(call_line, name);
     return this->table->at(name)->dec_line;
 }
+
+Type FunctionTable::get_ret_type(int call_line, string& name){
+    is_function_exists(call_line, name);
+    return this->table->at(name)->return_type;
+}
+
 vector<Symbol*>* FunctionTable::get_api(int call_line, string& name){
     is_function_exists(call_line, name);
     return new vector<Symbol*>(*this->table->at(name)->api);
@@ -143,6 +149,11 @@ static bool is_vectors_equal(vector<int>& vec1, vector<int>& vec2){
 // dec_line = -1 if this is only a declaration.
 void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         vector<Symbol*>* api, vector<int>* scopes, int cmm_line_no) {
+    // main function checks:
+    if(name == "main" && (!scopes->empty() || return_type != VOID)){
+        SemanticError( cmm_line_no, "Wrong declaration of Main function");
+    }
+
     std::pair<std::map<string, Function *>::iterator, bool> res;
     res = table->insert(std::pair<string, Function *>(name,
                                                       new Function(dec_line,
@@ -160,16 +171,16 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
         } else if(dec_line == -1 && res.first->second->dec_line != -1) { // implementation --> declaration
             // check if api & scopes are similar:
             if (!is_vectors_equal(*api, *res.first->second->api) ||
-                *scopes != *res.first->second->scopes) {
+                *scopes != *res.first->second->scopes || return_type != res.first->second->return_type){
                 SemanticError(cmm_line_no,
-                              "Wrong API/Scopes for implementation of function");
+                              "Wrong API/Scopes/return type for implementation of function");
             }
         } else { // declaration --> implementation
             // check if api & scopes are similar:
             if (!is_vectors_equal(*api, *res.first->second->api) ||
-                *scopes != *res.first->second->scopes) {
+                *scopes != *res.first->second->scopes || return_type != res.first->second->return_type) {
                 SemanticError( cmm_line_no,
-                              "Wrong API/Scopes for implementation of function");
+                              "Wrong API/Scopes/return type for implementation of function");
             }
             // if they are:
             // 1. update the dec_line

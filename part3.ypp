@@ -602,6 +602,9 @@ CALL:   id tk_lp
             commands->emit("ADD2I I2 I2 " + to_string(return_val_offset));
 			// saving the offset for the return value
             $$.value = to_string(return_val_offset);
+			// saving the type
+			$$.type = function_table->get_ret_type(yylineno, $1.value);
+			// prepare call
             int call_line = commands->nextquad();
             int dec_line = function_table->add_call($1.value, call_line, called_args, called_scopes);
 			////// CALLING FUNCTION //////

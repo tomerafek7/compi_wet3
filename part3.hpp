@@ -146,6 +146,8 @@ public:
 
     int get_dec_line(int call_line, string& name);
 
+    Type get_ret_type(int call_line, string& name);
+
     int add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes);
 
     vector<Function>* get_all_implemented();
