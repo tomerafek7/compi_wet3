@@ -606,7 +606,7 @@ CALL:   id tk_lp
 			$$.type = function_table->get_ret_type(yylineno, $1.value);
 			// prepare call
             int call_line = commands->nextquad();
-            int dec_line = function_table->add_call($1.value, call_line, called_args, called_scopes);
+            int dec_line = function_table->add_call($1.value, call_line, called_args, called_scopes, yylineno);
 			////// CALLING FUNCTION //////
             commands->emit("JLINK " + to_string(dec_line));
 			//////////////////////////////

@@ -148,7 +148,7 @@ public:
 
     Type get_ret_type(int call_line, string& name);
 
-    int add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes);
+    int add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes, int cmm_line_no);
 
     vector<Function>* get_all_implemented();
 

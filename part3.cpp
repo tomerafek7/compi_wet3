@@ -204,7 +204,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
 //    table->at(name)->insertScopes(scopes);
 //}
 
-int FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes){
+int FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes, int cmm_line_no){
     // firstly, check that this function really declared
     if (!table->count(name)){
         SemanticError(call_line, "Function is not declared");
@@ -215,7 +215,6 @@ int FunctionTable::add_call(string &name, int call_line, vector<Symbol*>* api, v
     Function* curr_func  = this->table->at(name);
     vector<Symbol*> *called_func_api = curr_func->api;
     for(vector<Symbol*>::iterator it = api->begin(), iter = called_func_api->begin(); it != api->end() || iter != called_func_api->end() ; ++it, ++iter){
-        cout << (*it)->type << " " << (*iter)->type << endl;
         if((*it)->type != (*iter)->type) {
             SemanticError(call_line, "Function Arguments: type mismatch");
         }
