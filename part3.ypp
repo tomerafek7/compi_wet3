@@ -46,9 +46,6 @@ FDEFS:      FDEFS FUNC_API
 			}
 			BLK
 			{
-				// popping the symbol table
-				current_sym_tbl = symbol_table_stack->top();
-				symbol_table_stack->pop();
 				// at last, reset stack (I2)  + return command
 				commands->emit("COPYI I2 I1");
 				commands->emit("RETRN");
@@ -102,13 +99,7 @@ FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
 					args_api->push_back(new Symbol($2.type, $2.value));
 				};
               
-BLK: 	'{'
-		{
-			// pushing the symbol table so the block won't override it.
-			symbol_table_stack->push(current_sym_tbl);
-			// keeping the symbol table so we could append it inside the block.
-		}
-		STLIST '}'
+BLK: 	'{' STLIST '}'
 		{
 			// popping the symbol table
 			current_sym_tbl = symbol_table_stack->top();
