@@ -304,7 +304,7 @@ CNTRL:  tk_if BEXP tk_then M STMT tk_else N M STMT          	{
                                                             	commands->backpatch($6.nextlist, $2.quad) ;
                                                             	commands->backpatch($3.truelist , $5.quad);
                                                             	$$.nextlist = $3.falselist ;
-                                                            	commands->emit("UJUMP " + $2.quad);
+                                                            	commands->emit("UJUMP " + to_string($2.quad));
 																};
 
 BEXP:   BEXP tk_or M BEXP     					                {
