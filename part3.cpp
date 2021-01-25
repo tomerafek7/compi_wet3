@@ -275,7 +275,6 @@ SymbolTable::SymbolTable(SymbolTable& st){
 
 
 void SymbolTable::add_symbol(int call_line, string &name, int offset, Type type){
-    cout << name << " " << to_string(offset) << endl;
     std::pair<std::map<string,Symbol*>::iterator,bool> res;
     res = table->insert(std::make_pair(name,new Symbol(offset, type, name)));
     if (!res.second) {
