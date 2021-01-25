@@ -4,7 +4,7 @@ int foo(a,b,c : int, n,m,k : float, g1,g2,g3:int){
 void main(){
     i : int;
     i=10;
-    while(i!=0){
+    while(i<>0){
         write(i);
     }
     write(foo(1,2,3,4.0,5.0,6.0,7,8,9));
