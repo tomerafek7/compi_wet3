@@ -263,6 +263,9 @@ READ:   tk_read tk_lp LVAL tk_rp ';'
         
 ASSN:   LVAL tk_assign EXP ';'
 	{
+		if($3.type == VOID){
+			SemanticError(yylineno, "Cannot assign to void expression (returned from function)");
+		}
 		Type type = current_sym_tbl->get_symbol_type(yylineno, $1.value);
 		if(type != $3.type){
 			SemanticError(yylineno, "Assignment failed - different types");
@@ -532,13 +535,15 @@ EXP:    EXP addop EXP
         CALL
 		{
 			$$.type = $1.type;
-			$$.reg = RegisterIdx[$$.type]++;
-			if ($$.type == FLOAT){ // float - casting is needed
-				int addr_reg_f = RegisterIdx[FLOAT]++;
-				commands->emit("CITOF F" + to_string(addr_reg_f) + " I2"); // assuming the function output is at I2 + offset
-				commands->emit("LOADF F" + to_string($$.reg) + " F" + to_string(addr_reg_f) + " " + $1.value);
-			} else{ // integer - no casting is needed
-				commands->emit("LOADI I" + to_string($$.reg) + " I2 " + $1.value);
+			if($$.type != VOID){	// in case of function returning void - we do nothing here
+				$$.reg = RegisterIdx[$$.type]++;
+				if ($$.type == FLOAT){ // float - casting is needed
+					int addr_reg_f = RegisterIdx[FLOAT]++;
+					commands->emit("CITOF F" + to_string(addr_reg_f) + " I2"); // assuming the function output is at I2 + offset
+					commands->emit("LOADF F" + to_string($$.reg) + " F" + to_string(addr_reg_f) + " " + $1.value);
+				} else{ // integer - no casting is needed
+					commands->emit("LOADI I" + to_string($$.reg) + " I2 " + $1.value);
+				}
 			}
 		}    ;
 
