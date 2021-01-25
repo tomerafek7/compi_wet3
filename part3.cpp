@@ -435,7 +435,7 @@ int main(int argc, char* argv[]){
         exit(Operational);
     }
     string arg_file = argv[1];
-    if(arg_file.substr(arg_file.find_last_of('.')) != "cmm"){
+    if(arg_file.substr(arg_file.find_last_of('.')+1,arg_file.length()) != "cmm"){
         cerr << "Operational error: cannot open input file  - wrong file type" << endl;
         exit(Operational);
     }
