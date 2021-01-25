@@ -173,6 +173,7 @@ STMT:
 
 L:		{
 			symbol_table_stack->push(current_sym_tbl);
+			current_sym_tbl = new SymbolTable(*current_sym_tbl);
 			current_sym_tbl->set_symbols_shadow();
 		}	
         
