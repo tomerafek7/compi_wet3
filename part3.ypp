@@ -75,7 +75,7 @@ FUNC_API:   TYPE id tk_lp
 				$$.value = $2.value;
 				$$.type = $1.type;
 				in_declaration = false;
-				current_sym_tbl->add_symbols_api(yylineno-1, args_api);
+				current_sym_tbl->add_symbols_api(yylineno, args_api);
 			}
 			;
                                                                 
