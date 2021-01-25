@@ -257,9 +257,21 @@ Symbol::Symbol(Type type, string &name) :  type(type), name(name), is_local(true
 
 Symbol::Symbol(Type type, int reg) :  type(type), reg(reg), is_local(true){}
 
+Symbol::Symbol(Symbol* s): offset(s->offset), type(s->type), reg(s->reg), name(s->name), is_local(s->is_local)
+{}
+
 SymbolTable::SymbolTable(){
     table = new map<string,Symbol*>();
 }
+
+SymbolTable::SymbolTable(SymbolTable& st){
+    table = new map<string,Symbol*>();
+    for(auto it = st.table->begin(); it!= st.table->end(); ++it){
+        auto x = it->second->name;
+        table->insert(std::make_pair(it->second->name,new Symbol(it->second)));
+    }
+}
+
 
 void SymbolTable::add_symbol(int call_line, string &name, int offset, Type type){
     std::pair<std::map<string,Symbol*>::iterator,bool> res;
@@ -385,23 +397,24 @@ extern int yyparse (void);
 //    auto l4 = commands->makelist(5);
 //    cout << "";
 //
-//    string str = "x";
-//    current_sym_tbl->add_symbol(1,str,-4,INT);
-//    current_sym_tbl->get_symbol_offset(2,str);
-//    current_sym_tbl->get_symbol_type(2,str);
-//    symbol_table_stack->push(current_sym_tbl);
-////    current_sym_tbl->set_symbols_shadow();
-//    current_sym_tbl->add_symbol(1,str,8,FLOAT);
-//
-//    current_sym_tbl = new SymbolTable();
-//    string str2 = "xy";
-//    current_sym_tbl->add_symbol(3,str2,-8,FLOAT);
-//    current_sym_tbl->get_symbol_offset(4,str2);
-//    current_sym_tbl->get_symbol_type(5,str2);
-//    current_sym_tbl = symbol_table_stack->top();
-//    symbol_table_stack->pop();
-//    current_sym_tbl->get_symbol_offset(2,str);
-//    current_sym_tbl->get_symbol_type(2,str);
+    string str = "x";
+    current_sym_tbl->add_symbol(1,str,-4,INT);
+    current_sym_tbl->get_symbol_offset(2,str);
+    current_sym_tbl->get_symbol_type(2,str);
+    symbol_table_stack->push(current_sym_tbl);
+    current_sym_tbl = new SymbolTable(*current_sym_tbl);
+    current_sym_tbl->set_symbols_shadow();
+    current_sym_tbl->add_symbol(1,str,8,FLOAT);
+
+    current_sym_tbl = new SymbolTable();
+    string str2 = "xy";
+    current_sym_tbl->add_symbol(3,str2,-8,FLOAT);
+    current_sym_tbl->get_symbol_offset(4,str2);
+    current_sym_tbl->get_symbol_type(5,str2);
+    current_sym_tbl = symbol_table_stack->top();
+    symbol_table_stack->pop();
+    current_sym_tbl->get_symbol_offset(2,str);
+    current_sym_tbl->get_symbol_type(2,str);
 }*/
 
 int main(int argc, char* argv[]){

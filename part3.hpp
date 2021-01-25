@@ -80,6 +80,7 @@ public:
     Symbol(int offset, Type type, int reg , string &name);
     Symbol(Type type, string &name);
     Symbol(Type type, int reg);
+    Symbol(Symbol* s);
 
 
 };
@@ -100,6 +101,7 @@ public:
 
     SymbolTable();
 
+    SymbolTable(SymbolTable& st);
     void add_symbol(int call_line, string &name, int offset, Type type);
     int get_symbol_offset(int call_line, string &name);
     Type get_symbol_type(int call_line, string &name);
