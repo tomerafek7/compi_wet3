@@ -74,6 +74,7 @@ public:
     Type type;
     int reg;
     string name;
+    bool is_local; // 0 --> outer block, 1 --> inside current block
 
     Symbol(int offset, Type type, string &name);
     Symbol(int offset, Type type, int reg , string &name);
@@ -102,7 +103,7 @@ public:
     void add_symbol(int call_line, string &name, int offset, Type type);
     int get_symbol_offset(int call_line, string &name);
     Type get_symbol_type(int call_line, string &name);
-
+    void set_symbols_shadow();
 };
 
 

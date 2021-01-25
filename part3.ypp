@@ -153,7 +153,7 @@ STMT:
         READ        						                    {}  |
         WRITE       						                    {}  |
         RETURN      						                    {}  |
-        BLK         						                    {}  |
+        L BLK         						                    {}  |
         tk_scope tk_lp integernum tk_rp
 		{
 			if(scopes_iter == scopes_api->end()){
@@ -174,12 +174,16 @@ STMT:
 			commands->emit("BREQZ I" + to_string(reg) + " "); // backpatching is needed
 			scopes_iter++;
 
-		}  BLK
+		}  L BLK
 		{
 			in_scope = false;
 			commands->backpatch(commands->makelist(scope_jump_line), commands->nextquad()); // backpatch the needed backpatching above
 		};
 
+L:		{
+			symbol_table_stack->push(current_sym_tbl);
+			current_sym_tbl->set_symbols_shadow();
+		}	
         
 RETURN: tk_return EXP ';'
 		{

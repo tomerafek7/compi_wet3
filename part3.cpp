@@ -249,13 +249,13 @@ vector<Function>* FunctionTable::get_all_unimplemented(){
 
 
 
-Symbol::Symbol(int offset, Type type, string &name)  : offset(offset), type(type), name(name){}
+Symbol::Symbol(int offset, Type type, string &name)  : offset(offset), type(type), name(name), is_local(true){}
 
-Symbol::Symbol(int offset, Type type,  int reg, string &name) : offset(offset), type(type), reg(reg), name(name){}
+Symbol::Symbol(int offset, Type type,  int reg, string &name) : offset(offset), type(type), reg(reg), name(name), is_local(true){}
 
-Symbol::Symbol(Type type, string &name) :  type(type), name(name){}
+Symbol::Symbol(Type type, string &name) :  type(type), name(name), is_local(true){}
 
-Symbol::Symbol(Type type, int reg) :  type(type), reg(reg){}
+Symbol::Symbol(Type type, int reg) :  type(type), reg(reg), is_local(true){}
 
 SymbolTable::SymbolTable(){
     table = new map<string,Symbol*>();
@@ -264,8 +264,14 @@ SymbolTable::SymbolTable(){
 void SymbolTable::add_symbol(int call_line, string &name, int offset, Type type){
     std::pair<std::map<string,Symbol*>::iterator,bool> res;
     res = table->insert(std::make_pair(name,new Symbol(offset, type, name)));
-    if (!res.second) { // there's already a variable with this name
-        SemanticError(call_line, "Redeclaration of Variable");
+    if (!res.second) {
+        if(res.first->second->is_local){ // there's already a variable with this name in this scope
+            SemanticError(call_line, "Redeclaration of Variable");
+        } else { // shadow this var
+            table->at(name)->is_local = true;
+            table->at(name)->offset = offset;
+            table->at(name)->type = type;
+        }
     }
 
 }
@@ -281,6 +287,11 @@ Type SymbolTable::get_symbol_type(int call_line, string &name){
         SemanticError(call_line, "Variable is not declared");
     }
     return this->table->at(name)->type;
+}
+void SymbolTable::set_symbols_shadow(){
+    for(auto it = table->begin(); it!= table->end(); ++it){
+        (*it).second->is_local = false;
+    }
 }
 //
 //Line* makeLine(const char *type, const char *value) {
@@ -317,6 +328,10 @@ void SemanticError(int line_num, const char* error){
 extern int yyparse (void);
 
 /*int main(){
+
+
+
+
 
 //    string mystr = "abc";
 //    auto args = new vector<Symbol*>();
@@ -375,6 +390,9 @@ extern int yyparse (void);
 //    current_sym_tbl->get_symbol_offset(2,str);
 //    current_sym_tbl->get_symbol_type(2,str);
 //    symbol_table_stack->push(current_sym_tbl);
+////    current_sym_tbl->set_symbols_shadow();
+//    current_sym_tbl->add_symbol(1,str,8,FLOAT);
+//
 //    current_sym_tbl = new SymbolTable();
 //    string str2 = "xy";
 //    current_sym_tbl->add_symbol(3,str2,-8,FLOAT);
