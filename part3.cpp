@@ -186,7 +186,7 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
             // 2. update the dec_line for all calls:
             for (auto it = table->at(name)->calls->begin();
                  it != table->at(name)->calls->end(); ++it) {
-                commands->command_list->at(*it) =
+                commands->command_list->at(*it-1) =
                         "JLINK " + to_string(dec_line);
             }
         }
