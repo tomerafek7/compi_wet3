@@ -287,8 +287,16 @@ void SymbolTable::add_symbol(int call_line, string &name, int offset, Type type)
             table->at(name)->type = type;
         }
     }
-
 }
+
+void SymbolTable::add_symbols_api(int call_line, vector<Symbol*>* api){
+    int offset = -4;
+    for(auto it = api->begin(); it != api->end(); ++it){
+        this->add_symbol(call_line, (*it)->name, offset, (*it)->type);
+        offset -= 4;
+    }
+}
+
 int SymbolTable::get_symbol_offset(int call_line, string &name){
 
     if (!table->count(name)){

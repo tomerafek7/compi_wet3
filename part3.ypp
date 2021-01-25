@@ -75,6 +75,7 @@ FUNC_API:   TYPE id tk_lp
 				$$.value = $2.value;
 				$$.type = $1.type;
 				in_declaration = false;
+				current_sym_tbl->add_symbols_api(yylineno-1, args_api);
 			}
 			;
                                                                 
@@ -100,30 +101,32 @@ DCL:    id ':' TYPE                 				            {
 																	SemanticError(yylineno, "Cannot declare a variable with type void");
 																}
 																if(in_declaration){
-																	offset -= 4; // going down the stack for each argument
+																	//offset -= 4; // going down the stack for each argument
 																	args_api->push_back(new Symbol($3.type, $1.value));
 																} else {
 																	offset+=4; /*going up the stack for each new variable*/
 																	commands->emit("ADD2I I2 I2 4"); // I2 += 4
+																	current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
 																}
 																// in both cases:
-																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
                                                                 $$.type = $3.type;
-																$$.value = $1.value;
+																$$.value = 1;
                                                                 }    |
 																
-        id tk_comma DCL             				            { // same code...
+        id tk_comma DCL             				            {
+                                                                $$.type = $3.type;
+																$$.value = $3.value + 1;			
 																if(in_declaration){
-																	offset -= 4; // going down the stack for each argument
-																	args_api->push_back(new Symbol($3.type, $1.value));
+																	//offset -= 4; // going down the stack for each argument
+																	args_api->insert(args_api->end() - ($$.value + 1), new Symbol($3.type, $1.value));
+																	//args_api->push_back(new Symbol($3.type, $1.value));
 																} else {
 																	offset+=4; /*going up the stack for each new variable*/
 																	commands->emit("ADD2I I2 I2 4"); // I2 += 4
+																	current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
 																}
-																// in both cases:
-																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
-                                                                $$.type = $3.type;
-																$$.value = $1.value;
+																
+
                                     				            }    ;
                                     
 TYPE:   tk_int     						                        { $$.type = INT; }		|
@@ -597,10 +600,11 @@ CALL:   id tk_lp
                     commands->emit("STORI I" + to_string(RegisterIdx[INT]+1) + " I2 "+ to_string(return_val_offset));
                 }
             }
+			// call args:
             for(vector<Symbol*>::reverse_iterator it = called_args->rbegin(); it != called_args->rend(); ++it){
                 return_val_offset += 4;
                 if((*it)->type == FLOAT){
-                    commands->emit("STORF F" + to_string((*it)->reg) + " F2 " + to_string(return_val_offset));
+                    commands->emit("STORF F" + to_string((*it)->reg) + " F" + to_string(stack_ptr_float) + " " + to_string(return_val_offset));
                 } else {
                     commands->emit("STORI I" + to_string((*it)->reg) + " I2 " + to_string(return_val_offset));
                 }

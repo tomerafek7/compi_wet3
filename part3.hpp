@@ -103,6 +103,7 @@ public:
 
     SymbolTable(SymbolTable& st);
     void add_symbol(int call_line, string &name, int offset, Type type);
+    void add_symbols_api(int call_line, vector<Symbol*>* api);
     int get_symbol_offset(int call_line, string &name);
     Type get_symbol_type(int call_line, string &name);
     void set_symbols_shadow();
