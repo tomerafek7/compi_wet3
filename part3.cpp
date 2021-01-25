@@ -434,11 +434,15 @@ int main(int argc, char* argv[]){
         cerr << "Operational error: cannot open input file" << endl;
         exit(Operational);
     }
+    string arg_file = argv[1];
+    if(arg_file.substr(arg_file.find_last_of('.')) != "cmm"){
+        cerr << "Operational error: cannot open input file  - wrong file type" << endl;
+        exit(Operational);
+    }
     // call bison to parse
     rc = yyparse();
     assert (rc == 0);  // Parsed successfully (if not - should exit at error)
     // output file handling:
-    string arg_file = argv[1];
     string filename = arg_file.substr(0,arg_file.find_last_of('.'))+".rsk";
     ofstream file;
     file.open(filename);
