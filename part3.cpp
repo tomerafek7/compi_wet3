@@ -164,11 +164,9 @@ void FunctionTable::add_function(string &name, int dec_line, Type return_type,
     if (res.second) { // successfully inserted
         return;
     } else { // didn't insert (there's already a function with this name)
-        if (dec_line == -1 && res.first->second->dec_line == -1) { // 2nd declaration
-            SemanticError( cmm_line_no, "Redeclaration of Function");
-        } else if(dec_line != -1 && res.first->second->dec_line != -1) { // 2nd implementation
+          if(dec_line != -1 && res.first->second->dec_line != -1) { // 2nd implementation
             SemanticError(cmm_line_no, "ReImplementation of Function");
-        } else if(dec_line == -1 && res.first->second->dec_line != -1) { // implementation --> declaration
+        } else if(dec_line == -1) { // implementation --> declaration / 2nd declaration
             // check if api & scopes are similar:
             if (!is_vectors_equal(*api, *res.first->second->api) ||
                 *scopes != *res.first->second->scopes || return_type != res.first->second->return_type){

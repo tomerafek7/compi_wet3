@@ -157,7 +157,6 @@ public:
     void is_function_exists(int call_line, string& name);
 };
 
-
 // global variables
 extern Commands *commands;
 extern stack<SymbolTable*>* symbol_table_stack;
