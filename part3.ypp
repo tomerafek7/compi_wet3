@@ -578,7 +578,7 @@ CALL:   id tk_lp
             }
             commands->emit("COPYI I" + to_string(RegisterIdx[INT]+1) + " 0");
             commands->emit("COPYI I" + to_string(RegisterIdx[INT]+2) + " 1");
-            vector<int>* func_scopes = function_table->get_scope($1.value);
+            vector<int>* func_scopes = function_table->get_scope(yylineno, $1.value);
             for(vector<int>::reverse_iterator it = func_scopes->rbegin(); it != func_scopes->rend(); ++it){
                 if(find(called_scopes->begin(), called_scopes->end(), *it) != called_scopes->end()){
                     return_val_offset += 4;
