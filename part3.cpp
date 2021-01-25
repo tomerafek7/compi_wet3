@@ -93,16 +93,27 @@ FunctionTable::FunctionTable(){
     table = new map<string, Function*>();
 }
 
-int FunctionTable::get_dec_line(string& name) {
+void FunctionTable::is_function_exists(int call_line, string& name){
+    if (!table->count(name)){
+        SemanticError(call_line, "Function is not declared");
+    }
+}
+
+int FunctionTable::get_dec_line(int call_line, string& name) {
+    is_function_exists(call_line, name);
     return this->table->at(name)->dec_line;
 }
-vector<Symbol*>* FunctionTable::get_api(string& name){
+vector<Symbol*>* FunctionTable::get_api(int call_line, string& name){
+    is_function_exists(call_line, name);
     return new vector<Symbol*>(*this->table->at(name)->api);
 }
 
-vector<int>* FunctionTable::get_scope(string &name){
+vector<int>* FunctionTable::get_scope(int call_line, string &name){
+    is_function_exists(call_line, name);
     return new vector<int>(*this->table->at(name)->scopes);
 }
+
+
 
 static bool is_vectors_equal(vector<Symbol*>& vec1, vector<Symbol*>& vec2){
     if(vec1.size() != vec2.size()){

@@ -140,18 +140,19 @@ public:
 
     void add_scopes(string &name, vector<int> & scopes);
 
-    vector<Symbol*>* get_api(string& name);
+    vector<Symbol*>* get_api(int call_line, string& name);
 
-    vector<int>* get_scope(string &name);
+    vector<int>* get_scope(int call_line, string &name);
+
+    int get_dec_line(int call_line, string& name);
 
     int add_call(string &name, int call_line, vector<Symbol*>* api, vector<int>* scopes);
-
-    int get_dec_line(string& name);
 
     vector<Function>* get_all_implemented();
 
     vector<Function>* get_all_unimplemented();
 
+    void is_function_exists(int call_line, string& name);
 };
 
 
