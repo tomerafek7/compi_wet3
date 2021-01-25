@@ -115,7 +115,9 @@ DCL:    id ':' TYPE                 				            {
 																
         id tk_comma DCL             				            {
                                                                 $$.type = $3.type;
-																$$.value = to_string(stoi($3.value) + 1);			
+																$$.value = to_string(stoi($3.value) + 1);
+																cout << "value = " << $$.value << " vector size = " << args_api->size() << endl;
+																
 																if(in_declaration){
 																	//offset -= 4; // going down the stack for each argument
 																	args_api->insert(args_api->end() - stoi($$.value), new Symbol($3.type, $1.value));
