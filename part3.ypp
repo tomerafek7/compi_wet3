@@ -40,7 +40,7 @@ PROGRAM:    FDEFS   						                    {}  ;
 FDEFS:      FDEFS FUNC_API
 			{
 				// definition - pass dec_line = nextquad
-				function_table->add_function($2.value, commands->nextquad(), $2.type, args_api, scopes_api,yylineno);
+				function_table->add_function($2.value, commands->nextquad(), $2.type, args_api, scopes_api, yylineno);
 				offset = 4;
 				scopes_iter = scopes_api->begin();
 			}
@@ -54,7 +54,7 @@ FDEFS:      FDEFS FUNC_API
 
             FDEFS FUNC_API ';'  				                
 			{   // declaration - pass dec_line = - 1
-				function_table->add_function($2.value, -1, $2.type, args_api, scopes_api,yylineno);
+				function_table->add_function($2.value, -1, $2.type, args_api, scopes_api, yylineno);
 			}	|
 			// epsilon - do nothing
             ;
@@ -68,11 +68,13 @@ FUNC_API:   TYPE id tk_lp
 				offset = 0;
 				args_api = new vector<Symbol*>();
 				scopes_api = new vector<int>();
+				in_declaration = true;
 			}
 			FUNC_ARGS tk_rp SCOPES_API
 			{
 				$$.value = $2.value;
 				$$.type = $1.type;
+				in_declaration = false;
 			}
 			;
                                                                 
@@ -83,21 +85,8 @@ SCOPES_API: 	tk_dot tk_scopes tk_lp SCOPES_LIST tk_rp    	{}      |
 FUNC_ARGS:  	FUNC_ARGLIST    				                {}      |
                                                                 ; // epsilon
 
-FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma
-				{
-					offset -= 4; // going down the stack for each argument
-				}
-				DCL
-				{
-					args_api->push_back(new Symbol($4.type, $4.value));
-				}	|
-				{
-					offset -= 4; // going down the stack for each argument
-				}
-              	DCL
-				{
-					args_api->push_back(new Symbol($2.type, $2.value));
-				};
+FUNC_ARGLIST: 	FUNC_ARGLIST tk_comma DCL						{}	|
+              	DCL												{}  ;
               
 BLK: 	'{' STLIST '}'
 		{
@@ -110,14 +99,30 @@ DCL:    id ':' TYPE                 				            {
 																if($3.type == VOID){
 																	SemanticError(yylineno, "Cannot declare a variable with type void");
 																}
+																if(in_declaration){
+																	offset -= 4; // going down the stack for each argument
+																	args_api->push_back(new Symbol($3.type, $1.value));
+																} else {
+																	offset+=4; /*going up the stack for each new variable*/
+																	commands->emit("ADD2I I2 I2 4"); // I2 += 4
+																}
+																// in both cases:
 																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
                                                                 $$.type = $3.type;
 																$$.value = $1.value;
                                                                 }    |
 																
-        id tk_comma DCL             				            {
+        id tk_comma DCL             				            { // same code...
+																if(in_declaration){
+																	offset -= 4; // going down the stack for each argument
+																	args_api->push_back(new Symbol($3.type, $1.value));
+																} else {
+																	offset+=4; /*going up the stack for each new variable*/
+																	commands->emit("ADD2I I2 I2 4"); // I2 += 4
+																}
+																// in both cases:
 																current_sym_tbl->add_symbol(yylineno, $1.value, offset, $3.type);
-																$$.type = $3.type;
+                                                                $$.type = $3.type;
 																$$.value = $1.value;
                                     				            }    ;
                                     
@@ -130,11 +135,7 @@ STLIST: STLIST STMT 						                    |
         
 STMT:
 
-		DCL ';'
-		{
-			offset+=4; /*going up the stack for each new variable*/
-			commands->emit("ADD2I I2 I2 4"); // I2 += 4
-		}	|
+		DCL ';'													{}	|
         ASSN        						                    {}  |
         EXP ';'     						                    {}	|
         CNTRL       						                    

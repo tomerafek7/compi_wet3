@@ -19,6 +19,7 @@ int offset;
 bool in_scope = false;
 bool in_call = false;
 int scope_jump_line;
+bool in_declaration = false;
 
 Commands::Commands(){
     command_list = new vector<string>();

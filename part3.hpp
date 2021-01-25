@@ -175,7 +175,7 @@ extern int offset;
 extern bool in_scope;
 extern bool in_call;
 extern int scope_jump_line;
-
+extern bool in_declaration;
 
 void SemanticError(int line_num, const char* error);
 
